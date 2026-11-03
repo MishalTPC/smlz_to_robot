@@ -154,40 +154,40 @@ property calculations and check the CHS area against the annulus formula.
 
 ## Phase 2: Excel workbook to Autodesk Robot (Python / pywin32)
 
-The Python import script lives in \`src/robot_from_excel.py\`. It reads the
-previously generated \`output/smlx_model.xlsx\` and creates a **new** 3D-frame
-Robot model (\`.rtd\`) using Robot's COM API; Robot is required **only for this
-second step**, on Windows. No VBA, CSV re-import, or \`pyrobotstructural\` is
+The Python import script lives in `src/robot_from_excel.py`. It reads the
+previously generated `output/smlx_model.xlsx` and creates a **new** 3D-frame
+Robot model (`.rtd`) using Robot's COM API; Robot is required **only for this
+second step**, on Windows. No VBA, CSV re-import, or `pyrobotstructural` is
 required.
 
 Install dependencies in the *same Python environment* that will run Robot:
 
-\`\`\`powershell
+```powershell
 python -m pip install -r src/requirements.txt
-\`\`\`
+```
 
 **Inspect the workbook before modifying Robot:**
 
-\`\`\`powershell
+```powershell
 python src/robot_from_excel.py --dry-run --poisson 0.30
-\`\`\`
+```
 
-The sample SMLX source exports \`nu=0\` and an empty shear modulus. Therefore
-\`--poisson 0.30\` is **an explicit user-authorized engineering assumption**,
+The sample SMLX source exports `nu=0` and an empty shear modulus. Therefore
+`--poisson 0.30` is **an explicit user-authorized engineering assumption**,
 not a silent replacement. Do not use that override without confirming the
-material property. If your workbook already has a verified \`nu\` and \`G\`,
-omit the \`--poisson\` option.
+material property. If your workbook already has a verified `nu` and `G`,
+omit the `--poisson` option.
 
 **Create a review-only Robot model from the workbook:**
 
-\`\`\`powershell
+```powershell
 python src/robot_from_excel.py --new-project --allow-approximations --poisson 0.30
-\`\`\`
+```
 
-Default output is \`output/smlx_from_excel.rtd\`. The script requires
-\`--new-project\` because a new Robot project can replace an unsaved project
+Default output is `output/smlx_from_excel.rtd`. The script requires
+`--new-project` because a new Robot project can replace an unsaved project
 currently open in Robot. Save any existing work before running. An existing
-RTD output file is not overwritten unless \`--overwrite\` is supplied.
+RTD output file is not overwritten unless `--overwrite` is supplied.
 
 Supported workbook worksheets:
 
@@ -201,30 +201,30 @@ Supported workbook worksheets:
 | Properties | Create custom Robot bar-section labels and section/material assignments |
 
 All numerical section properties use **SI units**. Robot's section-label values
-are \`I_BSDV_AX=A\`, \`I_BSDV_IY=Iy\`, \`I_BSDV_IZ=Iz\`,
-\`I_BSDV_IX=J\`, plus the effective shear areas (\`Ay\`, \`Az\`).
-The Robot material \`RO\` field expects **unit weight N/m³**, so the importer
-uses \`density_kg_m3 * 9.80665\`. Robot section labels include the associated
-material name. The imported \`fy\` is assigned to Robot's \`RE\` field.
-The exported \`fu\` is retained in Excel rather than falsely equating it to
-Robot's \`RT\` design limit.
+are `I_BSDV_AX=A`, `I_BSDV_IY=Iy`, `I_BSDV_IZ=Iz`,
+`I_BSDV_IX=J`, plus the effective shear areas (`Ay`, `Az`).
+The Robot material `RO` field expects **unit weight N/m³**, so the importer
+uses `density_kg_m3 * 9.80665`. Robot section labels include the associated
+material name. The imported `fy` is assigned to Robot's `RE` field.
+The exported `fu` is retained in Excel rather than falsely equating it to
+Robot's `RT` design limit.
 
 **Analysis-critical limitations — review-only model:**
 
 - Imported bars follow SMLX CAD reference-line endpoints. Internal member
   intersections are not split into nodes automatically.
-- Member normals and section axis rotations (Robot \`Gamma\`) are **not**
+- Member normals and section axis rotations (Robot `Gamma`) are **not**
   reconstructed. Review local \(y,z\) axes for *all* noncircular sections.
 - SMLX member offsets/eccentricities are retained in Excel but **not applied**.
-- Unsymmetric-section \`Iyz\` coupling (notably L angles) is not passed to
-  Robot's numerical section definition; warping constant \`Iw\`, shear-centre
+- Unsymmetric-section `Iyz` coupling (notably L angles) is not passed to
+  Robot's numerical section definition; warping constant `Iw`, shear-centre
   offsets and geometric section outlines are also not transferred.
 - No supports, member end releases, load cases, or loads are defined from this
   workbook; do **not** run or rely upon structural analysis without completing
   and validating the analytical model.
 
-For members with nonzero offsets or sections with nonzero \`Iyz\`, the importer
-**refuses** to build by default. The explicit \`--allow-approximations\` option
+For members with nonzero offsets or sections with nonzero `Iyz`, the importer
+**refuses** to build by default. The explicit `--allow-approximations` option
 acknowledges these omissions and permits a *review-only* model. It never
 silently invents restraints, connectivity or local axes.
 
@@ -234,6 +234,6 @@ material and section properties from Robot after setting them and confirms
 the node/member counts. Unit tests use simulated COM objects; the actual
 Robot integration **must be checked on your Windows installation**:
 
-\`\`\`powershell
+```powershell
 python -m unittest discover -s src -p "test_*.py" -v
-\`\`\`
+```
