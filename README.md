@@ -20,13 +20,58 @@ python src/smlx_reader.py
 ```
 
 By default, the input is `SMLX Test File 03.11.2026/` (the extracted sample
-committed above `src/`) and CSV files are written to `output/`:
+committed above `src/`) and CSV files **plus one Excel workbook** are written to `output/`:
 
 - `nodes.csv`: `node_id`, `x`, `y`, `z`.
 - `elements.csv`: `element_id`, `node1`, `node2`, `property_id` plus the source
   member ID, beam/column role, local normal, SMLX offsets and reference axis.
 - `properties.csv`: a distinct `property_id` for every section/material pair;
   name, type, dimensions, A, Iy, Iz, Iyz, J, Iw, shear areas and material data.
+- `smlx_model.xlsx`: a formatted, filterable Excel workbook containing all imported
+  information, organized into separate worksheets.
+
+## Excel workbook
+
+The default `output/smlx_model.xlsx` contains:
+
+| Worksheet | Contents |
+|---|---|
+| `Overview` | Input file, counts, model caveats and sheet guide |
+| `Nodes` | All node IDs and coordinates |
+| `Topology` | `element_id`, `node1`, `node2`, `property_id` |
+| `Elements` | All element fields including SMLX IDs, member roles, normals and offsets |
+| `Sections` | Unique SMLX profiles with geometric dimensions, A, Iy, Iz, Iyz, J, Iw and shear areas |
+| `Materials` | Unique material grades, E, G, nu, fy, fu and density |
+| `Properties` | **Complete unmodified `df_properties`**, one record per section/material combination |
+| `Field Units` | SI units and notes for every exported column |
+
+All data sheets have filterable Excel tables, frozen headings and readable
+column widths. Missing values such as uncalculated section properties or
+missing G are exported as **blank numeric cells**, not as the text `nan`.
+All lengths, stresses and section properties retain the original **SI units**.
+
+By default, running the Python reader produces **both CSV files and the workbook**.
+To choose the workbook filename or disable only the Excel export:
+
+```powershell
+python src/smlx_reader.py --excel-file "output/model_review.xlsx"
+python src/smlx_reader.py --no-excel
+```
+
+Export a workbook directly from existing DataFrames:
+
+```python
+from excel_export import export_smlx_workbook  # when `src` is on sys.path
+export_smlx_workbook(df_nodes, df_elements, df_properties,
+                     "output/smlx_model.xlsx", source="my_model.smlx")
+```
+
+The `Sections` and `Materials` views are deduplicated using their original SMLX
+IDs. The `Topology.property_id` key links to `Properties.property_id`; each
+property record then identifies the SMLX section and material. The `Elements`
+sheet retains the complete member metadata needed in a future Robot import.
+The workbook is intended for model review and audit rather than as the
+authoritative source for reimport.
 
 The same DataFrames are available programmatically:
 

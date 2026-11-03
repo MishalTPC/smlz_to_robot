@@ -24,6 +24,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from excel_export import export_smlx_workbook
+
 LOG = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SAMPLE = REPO_ROOT / "SMLX Test File 03.11.2026"
@@ -450,6 +452,10 @@ def main() -> None:
                         help="Extracted SMLX directory, .smlx/.zip or source XML")
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "output",
                         help="Folder for generated CSV files (default: output/)")
+    parser.add_argument("--excel-file", type=Path, default=None,
+                        help="Excel workbook destination (default: <output>/smlx_model.xlsx)")
+    parser.add_argument("--no-excel", action="store_true",
+                        help="Disable Excel workbook export; CSV files are still written")
     parser.add_argument("--mesh-factor", type=float, default=0.5,
                         help="Max triangle area / thickness^2 (default: 0.5)")
     parser.add_argument("--node-tolerance", type=float, default=1e-6,
@@ -472,6 +478,12 @@ def main() -> None:
         dest = args.output / f"{name}.csv"
         frame.to_csv(dest, index=False)
         print(f"Saved {len(frame):4d} rows to {dest}")
+    if not args.no_excel:
+        workbook_path = args.excel_file if args.excel_file is not None else args.output / "smlx_model.xlsx"
+        dest = export_smlx_workbook(
+            df_nodes, df_elements, df_properties, workbook_path, source=args.source,
+        )
+        print(f"Saved Excel workbook to {dest}")
     print("\nNodes:\n", df_nodes.head().to_string(index=False))
     print("\nElements:\n", df_elements.iloc[:, :4].head().to_string(index=False))
     print("\nSections and geometric properties (SI):\n",
