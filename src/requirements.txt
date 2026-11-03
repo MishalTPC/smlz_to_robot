@@ -1,0 +1,2 @@
+pandas>=2.0
+sectionproperties>=3.0
