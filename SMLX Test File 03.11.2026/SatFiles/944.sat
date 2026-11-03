@@ -1,0 +1,290 @@
+400 287 1 0
+17 Autodesk AModeler 13 ASM 7.0.2 NT 24 Tue Nov  3 10:30:33 2026
+ 1 1e-06 1e-10
+body $-1 $1 $-1 $-1 #
+lump $-1 $-1 $2 $0 #
+shell $-1 $-1 $-1 $3 $-1 $1 #
+face $237 $4 $17 $2 $-1 $163 forward single #
+face $242 $5 $18 $2 $-1 $164 forward single #
+face $246 $6 $19 $2 $-1 $165 forward single #
+face $249 $7 $20 $2 $-1 $166 forward single #
+face $254 $8 $21 $2 $-1 $167 forward single #
+face $256 $9 $22 $2 $-1 $168 forward single #
+face $260 $10 $23 $2 $-1 $169 forward single #
+face $263 $11 $24 $2 $-1 $170 forward single #
+face $267 $12 $25 $2 $-1 $171 forward single #
+face $268 $13 $26 $2 $-1 $172 forward single #
+face $271 $14 $27 $2 $-1 $173 forward single #
+face $274 $15 $28 $2 $-1 $174 forward single #
+face $278 $16 $29 $2 $-1 $175 forward single #
+face $282 $-1 $30 $2 $-1 $176 forward single #
+loop $-1 $-1 $67 $3 #
+loop $-1 $-1 $79 $4 #
+loop $-1 $-1 $91 $5 #
+loop $-1 $-1 $95 $6 #
+loop $-1 $-1 $99 $7 #
+loop $-1 $-1 $103 $8 #
+loop $-1 $-1 $107 $9 #
+loop $-1 $-1 $111 $10 #
+loop $-1 $-1 $115 $11 #
+loop $-1 $-1 $119 $12 #
+loop $-1 $-1 $123 $13 #
+loop $-1 $-1 $127 $14 #
+loop $-1 $-1 $131 $15 #
+loop $-1 $-1 $135 $16 #
+edge $238 $146 $148 $71 $177 forward #
+edge $239 $148 $150 $72 $178 forward #
+edge $240 $152 $154 $74 $179 forward #
+edge $241 $156 $158 $76 $180 forward #
+edge $243 $155 $153 $84 $181 forward #
+edge $244 $149 $147 $87 $182 forward #
+edge $245 $147 $145 $88 $183 forward #
+edge $247 $159 $161 $92 $184 forward #
+edge $248 $162 $160 $94 $185 forward #
+edge $250 $158 $157 $95 $186 forward #
+edge $251 $157 $159 $96 $187 forward #
+edge $252 $159 $160 $97 $188 forward #
+edge $253 $160 $158 $98 $189 forward #
+edge $255 $155 $157 $100 $190 forward #
+edge $257 $154 $153 $103 $191 forward #
+edge $258 $155 $156 $105 $192 forward #
+edge $259 $156 $154 $106 $193 forward #
+edge $261 $152 $151 $107 $194 forward #
+edge $262 $151 $153 $108 $195 forward #
+edge $264 $150 $149 $111 $196 forward #
+edge $265 $149 $151 $112 $197 forward #
+edge $266 $152 $150 $114 $198 forward #
+edge $269 $146 $145 $119 $199 forward #
+edge $270 $147 $148 $121 $200 forward #
+edge $272 $143 $145 $124 $201 forward #
+edge $273 $146 $144 $126 $202 forward #
+edge $275 $141 $143 $128 $203 forward #
+edge $276 $143 $144 $129 $204 forward #
+edge $277 $144 $142 $130 $205 forward #
+edge $279 $139 $141 $132 $206 forward #
+edge $280 $141 $142 $133 $207 forward #
+edge $281 $142 $140 $134 $208 forward #
+edge $283 $162 $161 $135 $209 forward #
+edge $284 $161 $139 $136 $210 forward #
+edge $285 $139 $140 $137 $211 forward #
+edge $286 $140 $162 $138 $212 forward #
+coedge $-1 $68 $78 $138 $66 reversed $17 $-1 #
+coedge $-1 $69 $67 $134 $62 reversed $17 $-1 #
+coedge $-1 $70 $68 $130 $59 reversed $17 $-1 #
+coedge $-1 $71 $69 $126 $56 reversed $17 $-1 #
+coedge $-1 $72 $70 $122 $31 forward $17 $-1 #
+coedge $-1 $73 $71 $118 $32 forward $17 $-1 #
+coedge $-1 $74 $72 $114 $52 reversed $17 $-1 #
+coedge $-1 $75 $73 $110 $33 forward $17 $-1 #
+coedge $-1 $76 $74 $106 $47 reversed $17 $-1 #
+coedge $-1 $77 $75 $102 $34 forward $17 $-1 #
+coedge $-1 $78 $76 $98 $43 reversed $17 $-1 #
+coedge $-1 $67 $77 $94 $39 reversed $17 $-1 #
+coedge $-1 $80 $90 $132 $60 reversed $18 $-1 #
+coedge $-1 $81 $79 $136 $64 reversed $18 $-1 #
+coedge $-1 $82 $80 $92 $38 reversed $18 $-1 #
+coedge $-1 $83 $81 $96 $41 reversed $18 $-1 #
+coedge $-1 $84 $82 $100 $44 reversed $18 $-1 #
+coedge $-1 $85 $83 $104 $35 forward $18 $-1 #
+coedge $-1 $86 $84 $108 $49 reversed $18 $-1 #
+coedge $-1 $87 $85 $112 $51 reversed $18 $-1 #
+coedge $-1 $88 $86 $116 $36 forward $18 $-1 #
+coedge $-1 $89 $87 $120 $37 forward $18 $-1 #
+coedge $-1 $90 $88 $124 $55 reversed $18 $-1 #
+coedge $-1 $79 $89 $128 $57 reversed $18 $-1 #
+coedge $-1 $92 $94 $97 $42 reversed $19 $-1 #
+coedge $-1 $93 $91 $81 $38 forward $19 $-1 #
+coedge $-1 $94 $92 $135 $63 reversed $19 $-1 #
+coedge $-1 $91 $93 $78 $39 forward $19 $-1 #
+coedge $-1 $96 $98 $101 $40 forward $20 $-1 #
+coedge $-1 $97 $95 $82 $41 forward $20 $-1 #
+coedge $-1 $98 $96 $91 $42 forward $20 $-1 #
+coedge $-1 $95 $97 $77 $43 forward $20 $-1 #
+coedge $-1 $100 $102 $105 $46 reversed $21 $-1 #
+coedge $-1 $101 $99 $83 $44 forward $21 $-1 #
+coedge $-1 $102 $100 $95 $40 reversed $21 $-1 #
+coedge $-1 $99 $101 $76 $34 reversed $21 $-1 #
+coedge $-1 $104 $106 $109 $45 forward $22 $-1 #
+coedge $-1 $105 $103 $84 $35 reversed $22 $-1 #
+coedge $-1 $106 $104 $99 $46 forward $22 $-1 #
+coedge $-1 $103 $105 $75 $47 forward $22 $-1 #
+coedge $-1 $108 $110 $113 $48 forward $23 $-1 #
+coedge $-1 $109 $107 $85 $49 forward $23 $-1 #
+coedge $-1 $110 $108 $103 $45 reversed $23 $-1 #
+coedge $-1 $107 $109 $74 $33 reversed $23 $-1 #
+coedge $-1 $112 $114 $117 $50 forward $24 $-1 #
+coedge $-1 $113 $111 $86 $51 forward $24 $-1 #
+coedge $-1 $114 $112 $107 $48 reversed $24 $-1 #
+coedge $-1 $111 $113 $73 $52 forward $24 $-1 #
+coedge $-1 $116 $118 $121 $54 reversed $25 $-1 #
+coedge $-1 $117 $115 $87 $36 reversed $25 $-1 #
+coedge $-1 $118 $116 $111 $50 reversed $25 $-1 #
+coedge $-1 $115 $117 $72 $32 reversed $25 $-1 #
+coedge $-1 $120 $122 $125 $53 forward $26 $-1 #
+coedge $-1 $121 $119 $88 $37 reversed $26 $-1 #
+coedge $-1 $122 $120 $115 $54 forward $26 $-1 #
+coedge $-1 $119 $121 $71 $31 reversed $26 $-1 #
+coedge $-1 $124 $126 $129 $58 reversed $27 $-1 #
+coedge $-1 $125 $123 $89 $55 forward $27 $-1 #
+coedge $-1 $126 $124 $119 $53 reversed $27 $-1 #
+coedge $-1 $123 $125 $70 $56 forward $27 $-1 #
+coedge $-1 $128 $130 $133 $61 reversed $28 $-1 #
+coedge $-1 $129 $127 $90 $57 forward $28 $-1 #
+coedge $-1 $130 $128 $123 $58 forward $28 $-1 #
+coedge $-1 $127 $129 $69 $59 forward $28 $-1 #
+coedge $-1 $132 $134 $137 $65 reversed $29 $-1 #
+coedge $-1 $133 $131 $79 $60 forward $29 $-1 #
+coedge $-1 $134 $132 $127 $61 forward $29 $-1 #
+coedge $-1 $131 $133 $68 $62 forward $29 $-1 #
+coedge $-1 $136 $138 $93 $63 forward $30 $-1 #
+coedge $-1 $137 $135 $80 $64 forward $30 $-1 #
+coedge $-1 $138 $136 $131 $65 forward $30 $-1 #
+coedge $-1 $135 $137 $67 $66 forward $30 $-1 #
+vertex $-1 $64 $213 #
+vertex $-1 $62 $214 #
+vertex $-1 $60 $215 #
+vertex $-1 $59 $216 #
+vertex $-1 $57 $217 #
+vertex $-1 $56 $218 #
+vertex $-1 $55 $219 #
+vertex $-1 $31 $220 #
+vertex $-1 $37 $221 #
+vertex $-1 $32 $222 #
+vertex $-1 $36 $223 #
+vertex $-1 $52 $224 #
+vertex $-1 $51 $225 #
+vertex $-1 $33 $226 #
+vertex $-1 $49 $227 #
+vertex $-1 $47 $228 #
+vertex $-1 $35 $229 #
+vertex $-1 $34 $230 #
+vertex $-1 $44 $231 #
+vertex $-1 $43 $232 #
+vertex $-1 $41 $233 #
+vertex $-1 $39 $234 #
+vertex $-1 $38 $235 #
+vertex $-1 $66 $236 #
+plane-surface $-1 826.95 2296.996521540851 8257.1 1.299702538055356e-14 -1 0 1 1.299702538055356e-14 -0 forward_v I I I I #
+plane-surface $-1 903 3546.996521540852 8257.1 0 1 0 -1 0 0 forward_v I I I I #
+plane-surface $-1 826.95 2296.996521540852 8248.5 -1 0 0 0 -1 0 forward_v I I I I #
+plane-surface $-1 826.95 2296.996521540852 8257.1 0 0 1 1 0 0 forward_v I I I I #
+plane-surface $-1 897 2296.996521540852 8257.1 -1 0 0 0 -1 0 forward_v I I I I #
+plane-surface $-1 897 2296.996521540852 8491.4 0 0 -1 -1 0 0 forward_v I I I I #
+plane-surface $-1 826.95 2296.996521540852 8491.4 -1 0 0 0 -1 0 forward_v I I I I #
+plane-surface $-1 826.95 2296.996521540852 8500 0 0 1 1 0 0 forward_v I I I I #
+plane-surface $-1 973.05 2296.996521540852 8500 1 -0 0 0 1 -0 forward_v I I I I #
+plane-surface $-1 973.05 2296.996521540852 8491.4 0 0 -1 -1 0 0 forward_v I I I I #
+plane-surface $-1 903 2296.996521540852 8491.4 1 -0 0 0 1 -0 forward_v I I I I #
+plane-surface $-1 903 2296.996521540852 8257.1 0 0 1 1 0 0 forward_v I I I I #
+plane-surface $-1 973.05 2296.996521540852 8257.1 1 -0 0 0 1 -0 forward_v I I I I #
+plane-surface $-1 973.05 2296.996521540852 8248.5 0 0 -1 -1 0 0 forward_v I I I I #
+straight-curve $-1 903 2296.996521540852 8491.4 1 0 0 I I #
+straight-curve $-1 973.05 2296.996521540852 8491.4 0 0 1 I I #
+straight-curve $-1 826.95 2296.996521540852 8500 0 0 -1 I I #
+straight-curve $-1 897 2296.996521540852 8491.4 0 0 -1 I I #
+straight-curve $-1 897 3546.996521540852 8491.4 -1 0 0 I I #
+straight-curve $-1 973.05 3546.996521540852 8500 0 0 -1 I I #
+straight-curve $-1 973.05 3546.996521540852 8491.4 -1 0 0 I I #
+straight-curve $-1 826.95 3546.996521540852 8257.1 0 0 -1 I I #
+straight-curve $-1 826.95 2296.996521540852 8248.5 0 0 1 I I #
+straight-curve $-1 897 2296.996521540852 8257.1 0 1 0 I I #
+straight-curve $-1 897 3546.996521540852 8257.1 -1 0 0 I I #
+straight-curve $-1 826.95 3546.996521540852 8257.1 0 -1 0 I I #
+straight-curve $-1 826.95 2296.996521540852 8257.1 1 0 0 I I #
+straight-curve $-1 897 3546.996521540852 8491.4 0 0 -1 I I #
+straight-curve $-1 826.95 2296.996521540852 8491.4 0 1 0 I I #
+straight-curve $-1 897 3546.996521540852 8491.4 0 -1 0 I I #
+straight-curve $-1 897 2296.996521540852 8491.4 -1 0 0 I I #
+straight-curve $-1 826.95 2296.996521540852 8500 0 1 0 I I #
+straight-curve $-1 826.95 3546.996521540852 8500 0 0 -1 I I #
+straight-curve $-1 973.05 2296.996521540852 8500 0 1 0 I I #
+straight-curve $-1 973.05 3546.996521540852 8500 -1 0 0 I I #
+straight-curve $-1 826.95 2296.996521540852 8500 1 0 0 I I #
+straight-curve $-1 903 2296.996521540852 8491.4 0 1 0 I I #
+straight-curve $-1 973.05 3546.996521540852 8491.4 0 -1 0 I I #
+straight-curve $-1 903 3546.996521540852 8257.1 0 0 1 I I #
+straight-curve $-1 903 2296.996521540852 8491.4 0 0 -1 I I #
+straight-curve $-1 973.05 3546.996521540852 8257.1 -1 0 0 I I #
+straight-curve $-1 903 3546.996521540852 8257.1 0 -1 0 I I #
+straight-curve $-1 903 2296.996521540852 8257.1 1 0 0 I I #
+straight-curve $-1 973.05 3546.996521540852 8248.5 0 0 1 I I #
+straight-curve $-1 973.05 3546.996521540852 8257.1 0 -1 0 I I #
+straight-curve $-1 973.05 2296.996521540852 8257.1 0 0 -1 I I #
+straight-curve $-1 826.95 2296.996521540852 8248.5 0 1 0 I I #
+straight-curve $-1 826.95 3546.996521540852 8248.5 1 0 0 I I #
+straight-curve $-1 973.05 3546.996521540852 8248.5 0 -1 0 I I #
+straight-curve $-1 973.05 2296.996521540852 8248.5 -1 0 0 I I #
+point $-1 973.05 3546.996521540852 8248.5 #
+point $-1 973.05 2296.996521540852 8248.5 #
+point $-1 973.05 3546.996521540852 8257.1 #
+point $-1 973.05 2296.996521540852 8257.1 #
+point $-1 903 3546.996521540852 8257.1 #
+point $-1 903 2296.996521540852 8257.1 #
+point $-1 903 3546.996521540852 8491.4 #
+point $-1 903 2296.996521540852 8491.4 #
+point $-1 973.05 3546.996521540852 8491.4 #
+point $-1 973.05 2296.996521540852 8491.4 #
+point $-1 973.05 3546.996521540852 8500 #
+point $-1 973.05 2296.996521540852 8500 #
+point $-1 826.95 3546.996521540852 8500 #
+point $-1 826.95 2296.996521540852 8500 #
+point $-1 826.95 3546.996521540852 8491.4 #
+point $-1 826.95 2296.996521540852 8491.4 #
+point $-1 897 3546.996521540852 8491.4 #
+point $-1 897 2296.996521540852 8491.4 #
+point $-1 897 3546.996521540852 8257.1 #
+point $-1 897 2296.996521540852 8257.1 #
+point $-1 826.95 3546.996521540852 8257.1 #
+point $-1 826.95 2296.996521540852 8257.1 #
+point $-1 826.95 3546.996521540852 8248.5 #
+point $-1 826.95 2296.996521540852 8248.5 #
+color-adesk-attrib $-1 $-1 $-1 $3 1 #
+color-adesk-attrib $-1 $-1 $-1 $31 1 #
+color-adesk-attrib $-1 $-1 $-1 $32 1 #
+color-adesk-attrib $-1 $-1 $-1 $33 1 #
+color-adesk-attrib $-1 $-1 $-1 $34 1 #
+color-adesk-attrib $-1 $-1 $-1 $4 1 #
+color-adesk-attrib $-1 $-1 $-1 $35 1 #
+color-adesk-attrib $-1 $-1 $-1 $36 1 #
+color-adesk-attrib $-1 $-1 $-1 $37 1 #
+color-adesk-attrib $-1 $-1 $-1 $5 1 #
+color-adesk-attrib $-1 $-1 $-1 $38 1 #
+color-adesk-attrib $-1 $-1 $-1 $39 1 #
+color-adesk-attrib $-1 $-1 $-1 $6 1 #
+color-adesk-attrib $-1 $-1 $-1 $40 1 #
+color-adesk-attrib $-1 $-1 $-1 $41 1 #
+color-adesk-attrib $-1 $-1 $-1 $42 1 #
+color-adesk-attrib $-1 $-1 $-1 $43 1 #
+color-adesk-attrib $-1 $-1 $-1 $7 1 #
+color-adesk-attrib $-1 $-1 $-1 $44 1 #
+color-adesk-attrib $-1 $-1 $-1 $8 1 #
+color-adesk-attrib $-1 $-1 $-1 $45 1 #
+color-adesk-attrib $-1 $-1 $-1 $46 1 #
+color-adesk-attrib $-1 $-1 $-1 $47 1 #
+color-adesk-attrib $-1 $-1 $-1 $9 1 #
+color-adesk-attrib $-1 $-1 $-1 $48 1 #
+color-adesk-attrib $-1 $-1 $-1 $49 1 #
+color-adesk-attrib $-1 $-1 $-1 $10 1 #
+color-adesk-attrib $-1 $-1 $-1 $50 1 #
+color-adesk-attrib $-1 $-1 $-1 $51 1 #
+color-adesk-attrib $-1 $-1 $-1 $52 1 #
+color-adesk-attrib $-1 $-1 $-1 $11 1 #
+color-adesk-attrib $-1 $-1 $-1 $12 1 #
+color-adesk-attrib $-1 $-1 $-1 $53 1 #
+color-adesk-attrib $-1 $-1 $-1 $54 1 #
+color-adesk-attrib $-1 $-1 $-1 $13 1 #
+color-adesk-attrib $-1 $-1 $-1 $55 1 #
+color-adesk-attrib $-1 $-1 $-1 $56 1 #
+color-adesk-attrib $-1 $-1 $-1 $14 1 #
+color-adesk-attrib $-1 $-1 $-1 $57 1 #
+color-adesk-attrib $-1 $-1 $-1 $58 1 #
+color-adesk-attrib $-1 $-1 $-1 $59 1 #
+color-adesk-attrib $-1 $-1 $-1 $15 1 #
+color-adesk-attrib $-1 $-1 $-1 $60 1 #
+color-adesk-attrib $-1 $-1 $-1 $61 1 #
+color-adesk-attrib $-1 $-1 $-1 $62 1 #
+color-adesk-attrib $-1 $-1 $-1 $16 1 #
+color-adesk-attrib $-1 $-1 $-1 $63 1 #
+color-adesk-attrib $-1 $-1 $-1 $64 1 #
+color-adesk-attrib $-1 $-1 $-1 $65 1 #
+color-adesk-attrib $-1 $-1 $-1 $66 1 #
