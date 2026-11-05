@@ -152,6 +152,53 @@ endpoints, 4 sections, geometry dimensions, material values and cross-reference
 integrity. When `sectionproperties` is installed, they also run the section
 property calculations and check the CHS area against the annulus formula.
 
+## South African Robot section database matching
+
+The one-click `src/run_robot.py` now searches Robot's **ZA (SAISC 2010)**
+steel-section database, followed by **SADEF**, through the Robot COM API.
+The Python unit `src/robot_section_catalog.py` enumerates actual profiles
+available in your Robot installation and matches sections by **family and
+complete nominal size**, allowing spaces, multiplication symbols, decimal
+formatting and the equal-angle alias `L` → `EA`. It does **not** guess the
+closest section or silently use the wrong profile size.
+
+For the supplied SMLX model the intended matching examples are:
+
+- `UB254X146X31` → `UB 254x146x31`
+- `UC152X152X30` → `UC 152x152x30`
+- `L60X60X6` → `EA 60x60x6` (equal angle)
+- `CHS101.6X4.0` → `CHS 101.6x4`
+
+These are **naming examples**: the actual availability is checked at runtime,
+and a profile is only loaded if found uniquely in Robot's selected database.
+The label is loaded through `LoadFromDBase2(profile, database)`, so its
+Robot catalogue geometry and parameters are retained. The associated S275JR
+material is applied separately.
+
+The independent geometric/mechanical properties calculated with
+`sectionproperties` are **never deleted or overwritten** in the source
+`output/smlx_model.xlsx` workbook. A companion
+`output/smlx_from_excel.sections.json` audit records the real database name,
+matched section name, the Robot-versus-Python section property differences,
+and any sections that had to retain numerical labels. If the RTD filename
+is numbered, the audit filename is numbered accordingly.
+
+For an unavailable or ambiguous profile, the default one-click runner
+**logs the issue and creates a clearly marked `_NUM` numerical section**
+rather than guessing a catalogue entry. Set `STRICT_CATALOGUE = True` in
+`src/run_robot.py` to stop if *any* catalogue section cannot be assigned.
+Set `USE_SA_CATALOGUE = False` to intentionally use the previous numerical
+section workflow. When using the command-line importer, use
+`--sections catalogue` (default) or `--sections numeric`; add
+`--strict-catalogue` to prohibit numerical fallbacks.
+
+**Engineering caveat:** catalogue sections can have different properties from
+the SMLX polygons because of fillets, wall-thickness conventions and local
+axis orientations. The audit flags differences exceeding 15%, but all
+catalogue values and section orientations still require review before
+structural analysis. Project member eccentricities and end releases are not
+yet translated.
+
 ## One-click Robot model builder (VS Code F5)
 
 For the sample model, **open `src/run_robot.py` and press F5**.

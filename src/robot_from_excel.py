@@ -29,6 +29,11 @@ def main() -> None:
     parser.add_argument("--robot-file", type=Path, default=DEFAULT_ROBOT_FILE,
                         help="Destination .rtd (default output/smlx_from_excel.rtd)")
     parser.add_argument("--overwrite", action="store_true", help="Permit overwriting an existing .rtd file")
+    parser.add_argument("--sections", choices=("catalogue", "numeric"),
+                        default="catalogue",
+                        help="Use ZA/SADEF Robot section database where matched (default) or numerical labels")
+    parser.add_argument("--strict-catalogue", action="store_true",
+                        help="Stop if any profile cannot be matched and loaded from Robot databases")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     model = read_excel_model(args.workbook)
@@ -58,6 +63,8 @@ def main() -> None:
             allow_approximations=args.allow_approximations,
             create_new_project=args.new_project,
             output=args.robot_file, overwrite=args.overwrite,
+            section_source=args.sections,
+            strict_catalogue=args.strict_catalogue,
         )
         print(f"Saved REVIEW-ONLY Robot model to {Path(args.robot_file).resolve()}")
         print("Verify Robot section axes, eccentricities, connectivity and restraints before analysis.")

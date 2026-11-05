@@ -18,6 +18,11 @@ ROBOT_FILE = ROOT / "output" / "smlx_from_excel.rtd"
 # Settings for the example. Change here instead of passing terminal arguments.
 ASSUMED_POISSON = 0.30
 REVIEW_ONLY = True
+# Search genuine South African steel profiles in ZA (SAISC 2010), then SADEF.
+USE_SA_CATALOGUE = True
+# False => clearly flagged numerical section fallback where Robot lacks a match.
+# True  => stop rather than create any numerical fallback.
+STRICT_CATALOGUE = False
 
 
 def next_unused_path(path: Path) -> Path:
@@ -48,6 +53,8 @@ def main() -> None:
             allow_approximations=REVIEW_ONLY,
             poisson_override=ASSUMED_POISSON,
             output=destination,
+            section_source="catalogue" if USE_SA_CATALOGUE else "numeric",
+            strict_catalogue=STRICT_CATALOGUE,
         )
         print(f"Saved review-only Robot model to: {destination}")
         print(f"Imported {report.nodes} nodes and {report.bars} bars.")
