@@ -152,6 +152,44 @@ endpoints, 4 sections, geometry dimensions, material values and cross-reference
 integrity. When `sectionproperties` is installed, they also run the section
 property calculations and check the CHS area against the annulus formula.
 
+## Python units / module separation
+
+The Robot stage is separated into independent Python modules, similar to
+Pascal units:
+
+- `src/excel_model.py`: read the Excel workbook into pandas DataFrames,
+  cross-check Nodes/Topology/Elements/Sections/Materials/Properties, and
+  perform engineering preflight checks. No Robot dependency.
+- `src/robot_builder.py`: dedicated Robot-building unit. Owns all COM
+  interaction, node/bar creation, material and section labels, validation
+  readback and `.rtd` saving. Exposes `RobotBuilder` and the compatible
+  `create_robot_model()` function.
+- `src/robot_from_excel.py`: minimal command-line entry point that calls
+  the two units. Existing CLI commands continue to work.
+
+The building unit can also be imported into other Python code:
+
+```python
+from excel_model import read_excel_model
+from robot_builder import RobotBuilder
+
+model = read_excel_model("output/smlx_model.xlsx")
+builder = RobotBuilder()
+report = builder.build_model(
+    model,
+    create_new_project=True,
+    allow_approximations=True,
+    poisson_override=0.30,  # Apply only after engineering approval.
+    output="output/smlx_from_excel.rtd",
+)
+print(report)
+```
+
+`RobotBuilder` accepts optional injected `robot` and `constants` objects
+for offline unit testing. It connects to Robot lazily; importing the module
+or using `--dry-run` does not start Robot. A new project is only permitted
+when `create_new_project=True`. See review-only limitations below.
+
 ## Phase 2: Excel workbook to Autodesk Robot (Python / pywin32)
 
 The Python import script lives in `src/robot_from_excel.py`. It reads the
