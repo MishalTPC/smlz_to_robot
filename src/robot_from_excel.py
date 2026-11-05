@@ -13,7 +13,8 @@ from excel_model import (WorkbookModel, ImportReport, DEFAULT_WORKBOOK,
                          read_excel_model, evaluate_model)
 from robot_builder import (RobotBuilder, GRAVITY, DEFAULT_ROBOT_FILE,
                            material_label_name, section_label_name,
-                           create_robot_model)
+                           create_robot_model, _robot_constants,
+                           keep_robot_open_for_review)
 
 
 def main() -> None:
@@ -40,12 +41,28 @@ def main() -> None:
     if args.dry_run:
         print("Dry run complete. Robot was not opened or modified.")
         return
-    result = create_robot_model(model, poisson_override=args.poisson,
-                                allow_approximations=args.allow_approximations,
-                                create_new_project=args.new_project,
-                                output=args.robot_file, overwrite=args.overwrite)
-    print(f"Saved REVIEW-ONLY Robot model to {Path(args.robot_file).resolve()}")
-    print("Verify Robot section axes, eccentricities, connectivity and restraints before analysis.")
+    # Respect explicit creation permission before launching a COM server.
+    if not args.new_project:
+        raise ValueError("Pass --new-project to permit replacing the active Robot project.")
+    if report.lossy and not args.allow_approximations:
+        raise ValueError("Use --allow-approximations for a REVIEW-ONLY model.")
+    if args.robot_file.exists() and not args.overwrite:
+        raise FileExistsError(
+            f"Robot output already exists: {args.robot_file}. Use --overwrite if intended."
+        )
+    robot, constants = _robot_constants()
+    try:
+        create_robot_model(
+            model, robot=robot, constants=constants,
+            poisson_override=args.poisson,
+            allow_approximations=args.allow_approximations,
+            create_new_project=args.new_project,
+            output=args.robot_file, overwrite=args.overwrite,
+        )
+        print(f"Saved REVIEW-ONLY Robot model to {Path(args.robot_file).resolve()}")
+        print("Verify Robot section axes, eccentricities, connectivity and restraints before analysis.")
+    finally:
+        keep_robot_open_for_review(robot)
 
 
 if __name__ == "__main__":

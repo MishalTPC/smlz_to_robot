@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from excel_model import read_excel_model
-from robot_builder import RobotBuilder
+from robot_builder import RobotBuilder, _robot_constants, keep_robot_open_for_review
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKBOOK = ROOT / "output" / "smlx_model.xlsx"
@@ -37,16 +37,24 @@ def main() -> None:
     destination = next_unused_path(ROBOT_FILE)
     print("Creating a NEW Robot project from:", WORKBOOK)
     print("Save any currently open Robot model before running this script.")
-    report = RobotBuilder().build_model(
-        model,
-        create_new_project=True,
-        allow_approximations=REVIEW_ONLY,
-        poisson_override=ASSUMED_POISSON,
-        output=destination,
-    )
-    print(f"Saved review-only Robot model to: {destination}")
-    print(f"Imported {report.nodes} nodes and {report.bars} bars.")
-    print("Review connectivity, local axes, offsets, supports and releases before analysis.")
+    # Keep the COM reference in this function's scope. If Robot was
+    # launched by Python, releasing the final reference may close it.
+    robot, constants = _robot_constants()
+    builder = RobotBuilder(robot=robot, constants=constants)
+    try:
+        report = builder.build_model(
+            model,
+            create_new_project=True,
+            allow_approximations=REVIEW_ONLY,
+            poisson_override=ASSUMED_POISSON,
+            output=destination,
+        )
+        print(f"Saved review-only Robot model to: {destination}")
+        print(f"Imported {report.nodes} nodes and {report.bars} bars.")
+        print("Review connectivity, local axes, offsets, supports and releases before analysis.")
+    finally:
+        # Also retain the application after a recoverable build exception.
+        keep_robot_open_for_review(robot)
 
 
 if __name__ == "__main__":

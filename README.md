@@ -170,6 +170,14 @@ analysis-critical behaviour (orientations, offsets, Iyz coupling, releases
 and supports). The resulting Robot model must not be treated as an
 analysis-ready design model.
 
+**Important:** The runner now retains a Robot COM connection after saving
+and pauses the terminal for inspection. Robot will remain available while
+the Python session is paused; press Enter in the terminal when finished.
+Releasing the final COM reference may then close an instance that Python
+started. The same inspection pause applies when using the advanced
+`robot_from_excel.py` command-line program. If the process has no
+interactive console, reopen the saved RTD file using Robot.
+
 The output is `output/smlx_from_excel.rtd`. If that file exists,
 the runner chooses `smlx_from_excel_002.rtd`, etc., instead of
 overwriting previous results. The advanced command-line interface remains

@@ -205,3 +205,23 @@ class RobotBuilder:
             create_new_project=create_new_project,
             overwrite=overwrite,
         )
+
+def keep_robot_open_for_review(robot: object, *, prompt_fn=None) -> None:
+    """Keep a live COM application reference until the user finishes review.
+
+    The script may be the only COM client keeping an auto-launched Robot
+    instance alive. This pause is intentional for interactive VS Code runs.
+    Inject prompt_fn for offline tests. EOF (non-interactive runs) is safe.
+    """
+    if robot is None:
+        raise ValueError("Robot application reference is required")
+    if prompt_fn is None:
+        prompt_fn = input
+    try:
+        prompt_fn(
+            "\nRobot model is available. Inspect it now. "
+            "Press Enter in this terminal when finished (Robot may then close): "
+        )
+    except EOFError:
+        print("No interactive console; reopen the saved .rtd file in Robot if needed.")
+
