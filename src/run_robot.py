@@ -1,0 +1,53 @@
+"""Single-click Excel -> Robot runner. Open this file in VS Code and press F5.
+
+This creates a NEW, REVIEW-ONLY Robot project. Save any open Robot project first.
+The sample steel's missing Poisson ratio is explicitly assumed as 0.30 here.
+Check this assumption before using the model for engineering analysis.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+from excel_model import read_excel_model
+from robot_builder import RobotBuilder
+
+ROOT = Path(__file__).resolve().parent.parent
+WORKBOOK = ROOT / "output" / "smlx_model.xlsx"
+ROBOT_FILE = ROOT / "output" / "smlx_from_excel.rtd"
+
+# Settings for the example. Change here instead of passing terminal arguments.
+ASSUMED_POISSON = 0.30
+REVIEW_ONLY = True
+
+
+def next_unused_path(path: Path) -> Path:
+    """Avoid accidentally replacing an earlier Robot model."""
+    if not path.exists():
+        return path
+    counter = 2
+    while True:
+        candidate = path.with_name(f"{path.stem}_{counter:03d}{path.suffix}")
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
+def main() -> None:
+    model = read_excel_model(WORKBOOK)
+    destination = next_unused_path(ROBOT_FILE)
+    print("Creating a NEW Robot project from:", WORKBOOK)
+    print("Save any currently open Robot model before running this script.")
+    report = RobotBuilder().build_model(
+        model,
+        create_new_project=True,
+        allow_approximations=REVIEW_ONLY,
+        poisson_override=ASSUMED_POISSON,
+        output=destination,
+    )
+    print(f"Saved review-only Robot model to: {destination}")
+    print(f"Imported {report.nodes} nodes and {report.bars} bars.")
+    print("Review connectivity, local axes, offsets, supports and releases before analysis.")
+
+
+if __name__ == "__main__":
+    main()

@@ -152,6 +152,29 @@ endpoints, 4 sections, geometry dimensions, material values and cross-reference
 integrity. When `sectionproperties` is installed, they also run the section
 property calculations and check the CHS area against the annulus formula.
 
+## One-click Robot model builder (VS Code F5)
+
+For the sample model, **open `src/run_robot.py` and press F5**.
+This small Python runner loads `output/smlx_model.xlsx` and calls the
+separate `RobotBuilder` unit. No command-line arguments are required.
+
+The example S275JR material has `nu=0` in the SMLX export, so this
+runner **explicitly assumes `nu=0.30`** and computes the shear modulus
+from E. Adjust the `ASSUMED_POISSON` setting in `src/run_robot.py` if
+your approved material value differs. This does *not* alter the spreadsheet.
+
+**Save any existing Robot project before pressing F5.** The runner creates
+a new 3D frame project; it does not silently modify an existing model.
+It uses `REVIEW_ONLY=True` because the imported workbook omits some
+analysis-critical behaviour (orientations, offsets, Iyz coupling, releases
+and supports). The resulting Robot model must not be treated as an
+analysis-ready design model.
+
+The output is `output/smlx_from_excel.rtd`. If that file exists,
+the runner chooses `smlx_from_excel_002.rtd`, etc., instead of
+overwriting previous results. The advanced command-line interface remains
+available through `src/robot_from_excel.py`.
+
 ## Python units / module separation
 
 The Robot stage is separated into independent Python modules, similar to
