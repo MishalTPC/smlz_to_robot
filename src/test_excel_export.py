@@ -9,7 +9,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from excel_export import (MATERIAL_COLUMNS, SECTION_COLUMNS, export_smlx_workbook)
+from excel_export import (
+    MATERIAL_COLUMNS, SECTION_COLUMNS, PROPERTIES_TRAILING_COLUMNS,
+    export_smlx_workbook, properties_export_view,
+)
 
 
 NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -71,9 +74,50 @@ class ExcelExportTests(unittest.TestCase):
                                  ("A1:D3", ["element_id", "node1", "node2", "property_id"]))
                 self.assertEqual(table_info["SmlxSections"][0], "A1:W2")
                 self.assertEqual(table_info["SmlxMaterials"][0], "A1:H3")
-                self.assertIn("property_source", table_info["SmlxProperties"][1])
-                self.assertIn("Iyz", table_info["SmlxProperties"][1])
+                property_fields = table_info["SmlxProperties"][1]
+                self.assertEqual(property_fields[-4:], list(PROPERTIES_TRAILING_COLUMNS))
+                self.assertEqual(
+                    property_fields[:-4],
+                    [col for col in props.columns if col not in PROPERTIES_TRAILING_COLUMNS],
+                )
+                self.assertEqual(len(property_fields), len(props.columns))
+                self.assertEqual(set(property_fields), set(props.columns))
+                self.assertIn("property_source", property_fields)
+                self.assertIn("Iyz", property_fields)
+                self.assertEqual(
+                    table_info["SmlxSections"][1],
+                    list(SECTION_COLUMNS),
+                )
+                self.assertEqual(
+                    table_info["SmlxMaterials"][1],
+                    list(MATERIAL_COLUMNS),
+                )
                 self.assertIn("smlx_member_id", table_info["SmlxElements"][1])
+
+    def test_properties_reordering_retains_values_and_input_frame(self):
+        _, _, original = fixture()
+        before = original.copy(deep=True)
+        view = properties_export_view(original)
+        self.assertEqual(list(view.columns[-4:]), list(PROPERTIES_TRAILING_COLUMNS))
+        self.assertEqual(
+            list(view.columns[:-4]),
+            [col for col in before.columns if col not in PROPERTIES_TRAILING_COLUMNS],
+        )
+        pd.testing.assert_frame_equal(original, before)
+        pd.testing.assert_frame_equal(
+            view.loc[:, original.columns], original,
+        )
+        self.assertEqual(view.loc[0, "material_name"], "S275JR")
+        self.assertEqual(view.loc[1, "smlx_material_id"], 49)
+
+    def test_future_columns_remain_before_smlx_metadata(self):
+        _, _, original = fixture()
+        original["opensees_section_tag"] = [101, 102]
+        view = properties_export_view(original)
+        self.assertEqual(
+            list(view.columns[-5:]),
+            ["opensees_section_tag", *PROPERTIES_TRAILING_COLUMNS],
+        )
 
     def test_invalid_reference_rejected(self):
         nodes, elements, props = fixture()

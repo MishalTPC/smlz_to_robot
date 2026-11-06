@@ -29,6 +29,26 @@ MATERIAL_COLUMNS = (
 )
 TOPOLOGY_COLUMNS = ("element_id", "node1", "node2", "property_id")
 
+# Keep analysis-oriented section/material properties at the left of the
+# Properties worksheet. These four columns are retained for SMLX provenance
+# but always written at the far right, in this fixed order.
+PROPERTIES_TRAILING_COLUMNS = (
+    "section_standard", "material_name",
+    "smlx_section_id", "smlx_material_id",
+)
+
+
+def properties_export_view(frame: pd.DataFrame) -> pd.DataFrame:
+    """Return a reordered Properties view without changing the source data.
+
+    Other unrecognised columns (including future OpenSees-related fields)
+    keep their original order before the SMLX-specific metadata columns.
+    """
+    columns = [c for c in frame.columns if c not in PROPERTIES_TRAILING_COLUMNS]
+    columns.extend(c for c in PROPERTIES_TRAILING_COLUMNS if c in frame.columns)
+    return frame.loc[:, columns].copy()
+
+
 SI_UNITS = {
     "node_id": "-", "node1": "-", "node2": "-", "element_id": "-",
     "property_id": "-", "smlx_member_id": "-", "smlx_section_id": "-",
@@ -223,6 +243,7 @@ def export_smlx_workbook(df_nodes: pd.DataFrame, df_elements: pd.DataFrame,
     Properties and Field Units. Sections/materials are deduplicated by their
     original SMLX IDs; property_id remains the join key for element assignments.
     Missing/uncomputed numerical properties are exported as blank cells.
+    The Properties sheet alone places the four SMLX provenance fields last.
     """
     _validate_frames(df_nodes, df_elements, df_properties)
     destination = Path(destination).expanduser()
@@ -239,9 +260,10 @@ def export_smlx_workbook(df_nodes: pd.DataFrame, df_elements: pd.DataFrame,
                  .sort_values("smlx_material_id")
                  .reset_index(drop=True))
     topology = df_elements.loc[:, list(TOPOLOGY_COLUMNS)].copy()
+    properties = properties_export_view(df_properties)
     sheet_data = [
         ("Nodes", df_nodes), ("Topology", topology), ("Elements", df_elements),
-        ("Sections", sections), ("Materials", materials), ("Properties", df_properties),
+        ("Sections", sections), ("Materials", materials), ("Properties", properties),
     ]
     dictionary_rows = [
         {"worksheet": sheet_name, "field": field, "SI_unit": SI_UNITS.get(field, "-"),

@@ -42,13 +42,22 @@ The default `output/smlx_model.xlsx` contains:
 | `Elements` | All element fields including SMLX IDs, member roles, normals and offsets |
 | `Sections` | Unique SMLX profiles with geometric dimensions, A, Iy, Iz, Iyz, J, Iw and shear areas |
 | `Materials` | Unique material grades, E, G, nu, fy, fu and density |
-| `Properties` | **Complete unmodified `df_properties`**, one record per section/material combination |
+| `Properties` | All `df_properties` fields and values, one record per section/material combination; four SMLX-specific fields moved to the right |
 | `Field Units` | SI units and notes for every exported column |
 
 All data sheets have filterable Excel tables, frozen headings and readable
 column widths. Missing values such as uncalculated section properties or
 missing G are exported as **blank numeric cells**, not as the text `nan`.
 All lengths, stresses and section properties retain the original **SI units**.
+
+In the **Properties** worksheet, the final four columns are now
+`section_standard`, `material_name`, `smlx_section_id`, and
+`smlx_material_id`, in that order. The rest of the columns remain in their
+original order, and all four fields and their values are preserved. This is
+a **worksheet-only presentation change**: `df_properties`, the separate
+`Sections` and `Materials` worksheets, the CSV output, and the
+name-based Robot importer remain unchanged. This also leaves the main
+properties area ready for downstream readers such as OpenSees.
 
 By default, running the Python reader produces **both CSV files and the workbook**.
 To choose the workbook filename or disable only the Excel export:
