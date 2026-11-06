@@ -55,6 +55,10 @@ class FakeLabel:
 class FakeData:
     def __init__(self):
         self.values = {}
+        # Release labels use StartNode/EndNode; these are only populated
+        # when the bending-pin creation function is exercised.
+        self.StartNode = SimpleNamespace()
+        self.EndNode = SimpleNamespace()
 
     def SetValue(self, value_type, value):
         self.values[value_type] = value
@@ -126,7 +130,8 @@ class FakeRobot:
 C = SimpleNamespace(I_PT_FRAME_3D=4, I_LT_MATERIAL=1, I_LT_BAR_SECTION=2,
                     I_MT_STEEL=3, I_BST_STANDARD=4, I_BSST_UNKNOWN=5,
                     I_BSDV_AX=6, I_BSDV_IY=7, I_BSDV_IZ=8,
-                    I_BSDV_IX=9, I_BSDV_AY=10, I_BSDV_AZ=11)
+                    I_BSDV_IX=9, I_BSDV_AY=10, I_BSDV_AZ=11,
+                    I_LT_BAR_RELEASE=12, I_BERV_STD=1, I_BERV_NONE=0)
 
 
 class ExcelRobotTests(unittest.TestCase):

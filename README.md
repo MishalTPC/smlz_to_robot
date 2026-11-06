@@ -132,8 +132,10 @@ shear-centre values returned by `get_sc()` are offsets **from the centroid**.
 SMLX member normals and source offsets are retained for a later member-axis
 conversion to Robot. Member lines are currently created from the **SMLX CAD
 start/end reference coordinates**, not from adjusted analytical centre lines.
-Intersections inside members, eccentricities, releases and supports are not
+Intersections inside members, eccentricities and supports are not
 resolved into a fully connected structural model at this stage.
+The Robot-building stage applies a specifically requested bending end-release
+rule to all angle and CHS bars; see below.
 
 The sample material S275JR exports `E = 210 GPa`, `fy = 275 MPa`,
 `fu = 430 MPa`, `density = 7850 kg/m³` and **nu = 0.0**. The default reader
@@ -231,8 +233,36 @@ numerical-only mode and does not create parametric tubes.
 the SMLX polygons because of fillets, wall-thickness conventions and local
 axis orientations. The audit flags differences exceeding 15%, but all
 catalogue values and section orientations still require review before
-structural analysis. Project member eccentricities and end releases are not
-yet translated.
+structural analysis. Project member eccentricities and arbitrary source
+end releases are not yet translated. The specific angle/CHS end-release
+rule requested for this project is implemented separately; see below.
+
+## Automatic bending releases for angle and CHS bars
+
+The dedicated Python unit `src/robot_releases.py` now assigns one Robot
+bar-end release label `SMLX_ANGLE_CHS_BENDING_PIN` to **every member**
+whose source Excel section is an equal/unequal angle or CHS. Both ends use
+the same local-coordinate release configuration:
+
+| Local DOF | Start | End |
+|---|---|---|
+| UX, UY, UZ (translations) | Connected | Connected |
+| RX (torsion about bar longitudinal axis) | Connected | Connected |
+| RY, RZ (bending rotations) | Released | Released |
+
+Internally: `I_BERV_NONE` for UX/UY/UZ/RX and `I_BERV_STD` for RY/RZ
+at both `StartNode` and `EndNode`; the label is applied using
+`I_LT_BAR_RELEASE`. This releases **both bending moments** but preserves
+torsional continuity and member axial/shear connectivity. This is the
+requested engineering assumption for the example, not an inference from
+SMLX connection geometry. UB, UC and PFC/CDIN members remain unchanged.
+
+The section classification uses `Properties.property_id` and the source
+section type/naming, **not** a catalogue name. The catalogue audit JSON
+also records all member IDs assigned the rule. If connection torsional
+fixity or actual articulation is different, revise the rule before using
+the model for analysis. End releases can introduce mechanisms; review
+global stability, supports, connectivity and nodal equilibrium in Robot.
 
 ## One-click Robot model builder (VS Code F5)
 
@@ -248,8 +278,8 @@ your approved material value differs. This does *not* alter the spreadsheet.
 **Save any existing Robot project before pressing F5.** The runner creates
 a new 3D frame project; it does not silently modify an existing model.
 It uses `REVIEW_ONLY=True` because the imported workbook omits some
-analysis-critical behaviour (orientations, offsets, Iyz coupling, releases
-and supports). The resulting Robot model must not be treated as an
+analysis-critical behaviour (orientations, offsets, Iyz coupling,
+other connection releases and supports). The resulting Robot model must not be treated as an
 analysis-ready design model.
 
 **Important:** The runner now retains a Robot COM connection after saving
@@ -370,8 +400,14 @@ Robot's `RT` design limit.
 - Unsymmetric-section `Iyz` coupling (notably L angles) is not passed to
   Robot's numerical section definition; warping constant `Iw`, shear-centre
   offsets and geometric section outlines are also not transferred.
-- No supports, member end releases, load cases, or loads are defined from this
-  workbook; do **not** run or rely upon structural analysis without completing
+- Both ends of **all angle and CHS** members now receive an explicit
+  bending-release label: local **RY/RZ fully released**, local **RX torsion
+  connected**, and local **UX/UY/UZ translations connected**.
+  Other profile families retain their existing rigid bar ends. The release
+  classification uses the original Excel section/type, not the Robot
+  catalogue alias. A single shared Robot label is created and verified.
+- No supports, other source-defined release types, load cases or loads
+  are imported. Do **not** rely on structural analysis without completing
   and validating the analytical model.
 
 For members with nonzero offsets or sections with nonzero `Iyz`, the importer

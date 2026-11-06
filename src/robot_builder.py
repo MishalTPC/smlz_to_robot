@@ -27,6 +27,10 @@ from robot_section_catalog import (
 from robot_tube import (
     check_tube_properties, chs_dimensions, create_parametric_chs, is_chs,
 )
+from robot_releases import (
+    BENDING_PIN_LABEL, assign_bending_pin, create_bending_pin_label,
+    needs_bending_pin,
+)
 
 LOG = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -309,14 +313,35 @@ def create_robot_model(model: WorkbookModel, *, robot: object | None = None,
     )
     mat_id_by_prop = {int(row.property_id): int(row.smlx_material_id)
                       for _, row in model.properties.iterrows()}
+    # Source profile type determines releases; assigning a different Robot
+    # catalogue label must not change angle/CHS structural connectivity.
+    bending_pin_properties = {
+        int(row.property_id)
+        for _, row in model.properties.iterrows()
+        if needs_bending_pin(row)
+    }
+    release_name = (
+        create_bending_pin_label(structure.Labels, constants)
+        if bending_pin_properties else None
+    )
+    pinned_member_ids: list[int] = []
     for _, row in model.topology.sort_values("element_id").iterrows():
         n = int(row.element_id)
         structure.Bars.Create(n, int(row.node1), int(row.node2))
         bar = structure.Bars.Get(n)
         bar.SetLabel(constants.I_LT_BAR_SECTION, sec_names[int(row.property_id)])
         bar.SetLabel(constants.I_LT_MATERIAL, mat_names[mat_id_by_prop[int(row.property_id)]])
-        # NOT assigning Gamma: mapping SMLX normals to Robot local axes
-        # has not been established. Does not support end releases/offsets.
+        if int(row.property_id) in bending_pin_properties:
+            assert release_name is not None
+            assign_bending_pin(bar, constants, release_name)
+            pinned_member_ids.append(n)
+        # Source normals / Robot Gamma and eccentricities are still not mapped.
+        # Releasing BOTH local bending rotations is invariant to a Y/Z swap.
+    LOG.info(
+        "Assigned %s bending-pinned angle/CHS bars (both ends: RY/RZ free; "
+        "RX and all translations fixed).",
+        len(pinned_member_ids),
+    )
     if destination is not None:
         destination.parent.mkdir(parents=True, exist_ok=True)
         robot.Project.SaveAs(str(destination))
@@ -328,6 +353,17 @@ def create_robot_model(model: WorkbookModel, *, robot: object | None = None,
                 "databases": list(DEFAULT_DATABASES),
                 "database_warnings": catalogue_problems,
                 "sections": audit_rows,
+                "end_releases": {
+                    "label": release_name,
+                    "member_count": len(pinned_member_ids),
+                    "element_ids": pinned_member_ids,
+                    "rule": {
+                        "start": {"UX": "fixed", "UY": "fixed", "UZ": "fixed",
+                                  "RX": "fixed", "RY": "released", "RZ": "released"},
+                        "end": {"UX": "fixed", "UY": "fixed", "UZ": "fixed",
+                                "RX": "fixed", "RY": "released", "RZ": "released"},
+                    },
+                },
             }
             try:
                 report_file.write_text(
