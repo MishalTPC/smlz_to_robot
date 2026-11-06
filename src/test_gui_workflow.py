@@ -109,7 +109,7 @@ class GuiWorkflowTests(unittest.TestCase):
             )
             self.assertEqual(events, ["parse", "excel", "read", "connect", "build"])
             self.assertIs(held, app)
-            self.assertEqual(result.robot_file, robot_file)
+            self.assertEqual(result.robot_file, robot_file.resolve())
             self.assertEqual(result.materials, 1)
 
     def test_excel_still_exists_when_robot_connection_fails(self):
@@ -127,7 +127,7 @@ class GuiWorkflowTests(unittest.TestCase):
                     excel_reader=lambda _path: object(),
                     robot_connector=fail_connection,
                 )
-            self.assertEqual(raised.exception.excel_file, excel)
+            self.assertEqual(raised.exception.excel_file, excel.resolve())
             self.assertTrue(excel.exists())
 
 
