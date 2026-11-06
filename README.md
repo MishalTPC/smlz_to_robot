@@ -183,14 +183,37 @@ matched section name, the Robot-versus-Python section property differences,
 and any sections that had to retain numerical labels. If the RTD filename
 is numbered, the audit filename is numbered accordingly.
 
-For an unavailable or ambiguous profile, the default one-click runner
-**logs the issue and creates a clearly marked `_NUM` numerical section**
-rather than guessing a catalogue entry. Set `STRICT_CATALOGUE = True` in
+For an unavailable or ambiguous **CHS**, the one-click runner now creates
+a **genuine parametric circular hollow section**, using Robot's
+`I_BST_NS_TUBE` / `I_BSST_USER_TUBE` API, with outside diameter and wall
+thickness obtained directly from the Excel `h` and `t` fields.
+This replaces the previous `ShapeType=UNKNOWN` numerical CHS label,
+which can appear as a line. The resulting label ends in `_TUBE`, and the
+section audit records `"assignment": "parametric_tube"`.
+
+Database name matching also accepts Robot's `RO`, `RK`, and `RPA`
+tube/solid families as **potential** CHS names. These are accepted only
+after verifying the actual Robot catalogue area, bending inertias and
+torsion constant against the exact annulus for the exported diameter and
+wall thickness. Solid tubes and similarly named non-CHS profiles are
+rejected. The source workbook and its independent `sectionproperties`
+results are never modified by this process.
+
+For other profiles without a matching catalogue section, the importer
+still creates a clearly marked `_NUM` numerical label. If a CHS tube
+cannot be created through Robot's parametric API, the importer stops
+with an explicit error instead of silently creating a line-only profile.
+Set `STRICT_CATALOGUE = True` in
 `src/run_robot.py` to stop if *any* catalogue section cannot be assigned.
 Set `USE_SA_CATALOGUE = False` to intentionally use the previous numerical
 section workflow. When using the command-line importer, use
 `--sections catalogue` (default) or `--sections numeric`; add
 `--strict-catalogue` to prohibit numerical fallbacks.
+
+NOTE: `src/run_robot.py` uses `USE_SA_CATALOGUE = True` by default.
+This enables the catalogue-or-parametric CHS workflow. Explicit
+`--sections numeric` (or `USE_SA_CATALOGUE = False`) retains the earlier
+numerical-only mode and does not create parametric tubes.
 
 **Engineering caveat:** catalogue sections can have different properties from
 the SMLX polygons because of fillets, wall-thickness conventions and local

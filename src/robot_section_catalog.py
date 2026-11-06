@@ -22,8 +22,11 @@ LOG = logging.getLogger(__name__)
 DEFAULT_DATABASES = ("ZA", "SADEF")
 # 'L' (Advance Steel equal angle) corresponds to the EA catalogue family.
 _FAMILY_MAP = {"L": "EA", "EA": "EA", "UA": "UA", "UB": "UB",
-               "UC": "UC", "CHS": "CHS"}
-_FAMILY_RE = re.compile(r"(?<![A-Z])(CHS|UB|UC|EA|UA|L)(?![A-Z])", re.I)
+               "UC": "UC", "CHS": "CHS",
+               # Robot tube/solid families are only possible CHS aliases.
+               # Their actual geometry is independently verified in the builder.
+               "RO": "CHS", "RK": "CHS", "RPA": "CHS"}
+_FAMILY_RE = re.compile(r"(?<![A-Z])(CHS|RPA|UB|UC|EA|UA|RO|RK|L)(?![A-Z])", re.I)
 _NUMBER_RE = re.compile(r"(?<![\d.])\d+(?:\.\d+)?", re.I)
 
 
@@ -48,6 +51,8 @@ def _profile_key(name: str) -> tuple[str, tuple[Decimal, ...]] | None:
 
     Examples: 'UB254X146X31', 'UB 254 x 146 x 31', '254x146x31 UB',
     'L60X60X6' and 'EA 60*60*6'. Dimensions are never rounded or guessed.
+    RO/RK/RPA names are *candidates*, not proof of circular hollow geometry.
+    Robot's actual section properties must pass an annulus check before use.
     """
     cleaned = (str(name).upper().replace("×", "X").replace("*", "X")
                .replace("Ø", "").replace(",", "."))

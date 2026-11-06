@@ -15,16 +15,18 @@ from excel_model import read_excel_model
 from robot_builder import create_robot_model
 from test_robot_from_excel import C, FakeRobot, FakeData, FakeLabel, FakeLabels, make_workbook
 from test_robot_section_catalog import FakeDbList
+from robot_tube import expected_annulus_properties
 
 
 class CatalogueData(FakeData):
     def LoadFromDBase2(self, name, database):
         if (name, database) != ("CHS 101.6x4", "SADEF"):
             raise ValueError("Unexpected catalogue selection")
-        self.values[C.I_BSDV_AX] = .0016
-        self.values[C.I_BSDV_IY] = 1.2e-6
-        self.values[C.I_BSDV_IZ] = 1.2e-6
-        self.values[C.I_BSDV_IX] = 2.4e-6
+        exact = expected_annulus_properties(.1016, .004)
+        self.values[C.I_BSDV_AX] = exact["A"]
+        self.values[C.I_BSDV_IY] = exact["Iy"]
+        self.values[C.I_BSDV_IZ] = exact["Iz"]
+        self.values[C.I_BSDV_IX] = exact["J"]
 
 
 class CatalogueLabelServer(FakeLabels):
@@ -43,6 +45,15 @@ class CatalogueIntegrationTests(unittest.TestCase):
             model = read_excel_model(path)
             model.properties.loc[:, "section_name"] = "CHS101.6X4"
             model.sections.loc[:, "section_name"] = "CHS101.6X4"
+            # The base mock is 100x6; ensure its dimensions and mechanical
+            # properties actually describe the intended 101.6x4 tube.
+            exact = expected_annulus_properties(.1016, .004)
+            for frame in (model.properties, model.sections):
+                frame.loc[:, "h"] = .1016
+                frame.loc[:, "b"] = .1016
+                frame.loc[:, "t"] = .004
+                for key, value in exact.items():
+                    frame.loc[:, key] = value
             robot = FakeRobot()
             robot.Labels = CatalogueLabelServer()
             robot.Structure.Labels = robot.Labels
@@ -56,7 +67,9 @@ class CatalogueIntegrationTests(unittest.TestCase):
             self.assertEqual(report.bars, 1)
             selected = robot.Bars.Get(1).labels[constants.I_LT_BAR_SECTION]
             section = robot.Labels.Get(constants.I_LT_BAR_SECTION, selected).Data
-            self.assertAlmostEqual(section.values[constants.I_BSDV_AX], .0016)
+            self.assertAlmostEqual(
+                section.values[constants.I_BSDV_AX], exact["A"],
+            )
             self.assertFalse(selected.endswith("_NUM"))
 
 

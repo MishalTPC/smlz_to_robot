@@ -24,6 +24,9 @@ from robot_section_catalog import (
     DEFAULT_DATABASES, Match, audit_record, get_database_sections,
     load_catalogue_section, match_sections,
 )
+from robot_tube import (
+    check_tube_properties, chs_dimensions, create_parametric_chs, is_chs,
+)
 
 LOG = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -109,6 +112,11 @@ def _create_sections(structure: object, c: object, model: WorkbookModel,
                 actual = load_catalogue_section(
                     structure.Labels, c, prefs, base_name, material_name, match,
                 )
+                if is_chs(row):
+                    # RO/RK/RPA are only tube-family name candidates. Verify
+                    # A, Iy, Iz and J for a real circular hollow annulus.
+                    d, t = chs_dimensions(row)
+                    check_tube_properties(actual, d, t)
                 names[prop_id] = base_name
                 if audit_rows is not None:
                     audit_rows.append(audit_record(
@@ -148,8 +156,43 @@ def _create_sections(structure: object, c: object, model: WorkbookModel,
             LOG.warning("No catalogue match for %s: %s. Using numerical fallback.",
                         row.section_name, failed_reason)
 
-        # Numeric mode is the original behaviour, retained as a fallback and
-        # for callers that explicitly select section_source='numeric'.
+        # In catalogue mode an unmatched CHS must still have renderable
+        # *circular hollow* geometry. An UNKNOWN numerical section displays
+        # only as a line, even when its A/Iy/Iz/J are correct.
+        if is_chs(row) and catalogue_matches is not None:
+            d, t = chs_dimensions(row)
+            name = base_name + "_TUBE"
+            try:
+                actual = create_parametric_chs(
+                    structure.Labels, c, name, material_name, d, t,
+                )
+            except Exception as exc:
+                # Never silently recreate the original line-only CHS bug.
+                raise RuntimeError(
+                    f"Failed to create renderable CHS {row.section_name} "
+                    f"(outside diameter={d} m, thickness={t} m): {exc}"
+                ) from exc
+            names[prop_id] = name
+            if audit_rows is not None and match is not None:
+                record = audit_record(
+                    prop_id, match, mode="parametric_tube",
+                    robot_props=actual, source_row=row,
+                )
+                record["fallback_reason"] = failed_reason or (
+                    "No verified Robot database profile for this CHS"
+                )
+                record["dimensions_m"] = {
+                    "outside_diameter": d, "wall_thickness": t,
+                }
+                audit_rows.append(record)
+            LOG.info(
+                "Created renderable Robot CHS %s: D=%.6g m, t=%.6g m",
+                name, d, t,
+            )
+            continue
+
+        # Original numerical mode remains available, and non-CHS profiles
+        # retain their numerical fallback when catalogue matching fails.
         name = base_name + "_NUM" if match is not None else base_name
         label = structure.Labels.Create(c.I_LT_BAR_SECTION, name)
         data = label.Data
