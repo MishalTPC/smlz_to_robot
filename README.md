@@ -1,5 +1,52 @@
 # SMLX to Robot: Phase 1 – model reader
 
+## Desktop GUI — SMLX to Autodesk Robot
+
+**Author: Mishal Mohanlal · Version: 0.1.0 · The Project Company**
+
+The branded Python desktop GUI is launched from the repository root:
+
+```powershell
+python -m pip install -r requirements-gui.txt
+python launch_gui.py
+```
+
+This uses the same company logo and dark/gold PySide6 styling as the TPC
+licence-generator GUI. Select an **SMLX input** (`.smlx`, `.smlz`, `.zip`,
+`.xml`, or an extracted folder), a **Robot output** (`.rtd`), and an
+**Excel output** (`.xlsx`). Output filenames are suggested automatically,
+but can be changed independently. The Excel workbook is **always generated
+first**, including the complete Nodes, Topology, Elements, Sections, Materials,
+Properties and Field Units sheets. Properties calculated with
+`sectionproperties` are preserved for future OpenSees/Python tools.
+
+The GUI then reads the newly exported workbook and creates a new Robot
+review-only model via `pywin32`. Existing South African section catalogue
+matching, parametric CHS fallback and angle/CHS bending end releases are
+retained. You can also choose **Export Excel only**, which does not launch
+Robot. The source material Poisson ratio is retained in Excel; the GUI's
+default 0.30 assumption applies **only** to the Robot transfer and can be
+changed to an approved value.
+
+The GUI refuses to overwrite existing output files. It asks permission
+before creating a new Robot project, since Robot may have unsaved work open.
+After a Robot build, **leave the GUI open while inspecting Robot**: it holds
+the application COM reference. Save any active Robot model first. Models
+remain review-only pending verification of axes, offsets, supports,
+connection details and stability.
+
+### Build or download the Windows EXE
+
+Double-click `build_gui_windows.bat` on Windows with Python 3.12 installed.
+It creates an isolated environment and builds `dist/SMLX_to_Robot.exe`
+with PyInstaller. Alternatively, open GitHub **Actions → Build Windows SMLX
+to Robot GUI → Run workflow** on the `dev` branch. After a successful
+run, download and extract artifact `SMLX_to_Robot_Windows_v0.1.0`.
+A Windows build is also attempted after relevant changes to `dev`.
+Autodesk Robot must be installed and licensed for RTD creation; Excel-only
+export works without Robot. The real COM integration must be verified on
+your machine.
+
 This first stage reads an Autodesk Advance Steel SMLX file (or extracted archive)
 into three linked pandas DataFrames. **No Autodesk Robot model is created yet.**
 All Python code lives in `src/`.
