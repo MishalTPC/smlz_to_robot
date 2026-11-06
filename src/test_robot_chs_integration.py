@@ -53,9 +53,14 @@ class _SectionData(FakeData):
             CC.I_BSDV_IZ: exact['Iz'], CC.I_BSDV_IX: exact['J'],
         })
     def LoadFromDBase2(self, name, database):
-        if (name, database) != ('RO 101.6x4', 'ZA'):
+        if (name, database) not in (
+            ('RO 101.6x4', 'ZA'), ('RO 102x4', 'ZA')
+        ):
             raise ValueError(f'Unexpected database profile {name} [{database}]')
-        exact = expected_annulus_properties(.1016, .004)
+        # A rounded catalogue designation has the actual catalogue diameter
+        # (102 mm). The SMLX Excel geometry remains 101.6 mm.
+        d = .102 if name == 'RO 102x4' else .1016
+        exact = expected_annulus_properties(d, .004)
         self.values.update({
             CC.I_BSDV_AX: exact['A'], CC.I_BSDV_IY: exact['Iy'],
             CC.I_BSDV_IZ: exact['Iz'], CC.I_BSDV_IX: exact['J'],
@@ -149,6 +154,25 @@ class RobotCHSIntegrationTests(unittest.TestCase):
             self.assertFalse(name.endswith('_TUBE'))
             audit = json.loads(out.with_suffix('.sections.json').read_text())
             self.assertEqual(audit['sections'][0]['assignment'], 'robot_database')
+
+    def test_rounded_chs_uses_catalogue_without_changing_excel_dimensions(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            model = _ready_model(root / 'input.xlsx')
+            robot = _robot(['RO 102x4'])
+            out = root / 'sample.rtd'
+            create_robot_model(
+                model, robot=robot, constants=CC, section_source='catalogue',
+                create_new_project=True, output=out,
+            )
+            label = robot.Bars.Get(1).labels[CC.I_LT_BAR_SECTION]
+            self.assertFalse(label.endswith('_TUBE'))
+            audit = json.loads(out.with_suffix('.sections.json').read_text())
+            section = audit['sections'][0]
+            self.assertEqual(section['assignment'], 'robot_database')
+            self.assertEqual(section['catalogue_name'], 'RO 102x4')
+            self.assertIn('Rounded CHS nominal', section['reason'])
+            self.assertAlmostEqual(model.properties.loc[0,'h'], .1016)
 
     def test_solid_lookalike_is_rejected_for_parametric_tube(self):
         with tempfile.TemporaryDirectory() as folder:

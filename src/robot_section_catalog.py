@@ -11,24 +11,17 @@ from __future__ import annotations
 
 import logging
 import math
-import re
 from dataclasses import asdict, dataclass
-from decimal import Decimal, InvalidOperation
 from typing import Any, Iterable
+
+from robot_profile_names import profile_key as _profile_key, match_quality, nominal_chs_note
 
 LOG = logging.getLogger(__name__)
 
 # ZA = SAISC 2010 (South Africa); SADEF = SADEF steel sections.
 DEFAULT_DATABASES = ("ZA", "SADEF")
-# 'L' (Advance Steel equal angle) corresponds to the EA catalogue family.
-_FAMILY_MAP = {"L": "EA", "EA": "EA", "UA": "UA", "UB": "UB",
-               "UC": "UC", "CHS": "CHS",
-               # Robot tube/solid families are only possible CHS aliases.
-               # Their actual geometry is independently verified in the builder.
-               "RO": "CHS", "RK": "CHS", "RPA": "CHS"}
-_FAMILY_RE = re.compile(r"(?<![A-Z])(CHS|RPA|UB|UC|EA|UA|RO|RK|L)(?![A-Z])", re.I)
-_NUMBER_RE = re.compile(r"(?<![\d.])\d+(?:\.\d+)?", re.I)
-
+# Match families and naming aliases using robot_profile_names.py.
+# This isolates ZA/SADEF-specific aliases from Robot COM enumeration.
 
 @dataclass(frozen=True)
 class CatalogueEntry:
@@ -46,58 +39,61 @@ class Match:
     reason: str = ""
 
 
-def _profile_key(name: str) -> tuple[str, tuple[Decimal, ...]] | None:
-    """Map cosmetic variations to a family + complete nominal size key.
+def match_sections(
+    source_name: str, catalogue: Iterable[CatalogueEntry],
+    *, priority: tuple[str, ...] = DEFAULT_DATABASES,
+    section_type: str = "", section_standard: str = "",
+) -> Match:
+    """Match a genuine catalogue profile by family and nominal dimensions.
 
-    Examples: 'UB254X146X31', 'UB 254 x 146 x 31', '254x146x31 UB',
-    'L60X60X6' and 'EA 60*60*6'. Dimensions are never rounded or guessed.
-    RO/RK/RPA names are *candidates*, not proof of circular hollow geometry.
-    Robot's actual section properties must pass an annulus check before use.
+    South African Robot names include AE (equal angle), AU (unequal angle),
+    and CDIN (parallel-flange channel only). For CHS, a fractional SMLX
+    outside diameter such as 101.6 mm may be catalogued as 102 mm.
+    Exact matches take precedence over rounded-diameter matches.
+    Ambiguous candidates are *never* selected arbitrarily.
     """
-    cleaned = (str(name).upper().replace("×", "X").replace("*", "X")
-               .replace("Ø", "").replace(",", "."))
-    families = _FAMILY_RE.findall(cleaned)
-    if len(families) != 1:
-        return None
-    family = _FAMILY_MAP[families[0].upper()]
-    # Remove the family text before reading numeric sizes. This also handles
-    # profile names ending in the family name, e.g. '254X146X31 UB'.
-    without_family = _FAMILY_RE.sub(" ", cleaned, count=1)
-    numbers = _NUMBER_RE.findall(without_family)
-    expected_count = 2 if family == "CHS" else 3
-    if len(numbers) != expected_count:
-        return None
-    try:
-        sizes = tuple(Decimal(value).normalize() for value in numbers)
-    except InvalidOperation:
-        return None
-    if any(value <= 0 for value in sizes):
-        return None
-    return family, sizes
-
-
-def match_sections(source_name: str, catalogue: Iterable[CatalogueEntry],
-                   *, priority: tuple[str, ...] = DEFAULT_DATABASES) -> Match:
-    """Return a unique, family-and-dimensions match or an explicit failure.
-
-    Results within the same database are considered ambiguous instead of
-    selecting a profile arbitrarily. The preferred database has precedence.
-    """
-    target = _profile_key(source_name)
+    target = _profile_key(
+        source_name, section_type=section_type,
+        section_standard=section_standard,
+    )
     if target is None:
-        return Match(source_name, "unmatched", reason="Unrecognised source family/nominal size")
-    entries = tuple(catalogue)
-    for database in priority:
-        hits = sorted({entry.name for entry in entries
-                       if entry.database.upper() == database.upper()
-                       and _profile_key(entry.name) == target})
-        if len(hits) == 1:
-            return Match(source_name, "matched", database, hits[0], tuple(hits),
-                         "Same section family and all nominal dimensions")
-        if len(hits) > 1:
-            return Match(source_name, "ambiguous", database, None, tuple(hits),
-                         "Multiple catalogue profiles have the same family and nominal dimensions")
-    return Match(source_name, "unmatched", reason="No unique family-and-size match in active databases")
+        return Match(
+            source_name, "unmatched",
+            reason="Unrecognised source family/nominal size or channel flange type",
+        )
+    entries = tuple((entry, _profile_key(entry.name)) for entry in catalogue)
+    # Exact matching always takes priority, even if a rounded size is
+    # available in a higher-priority database.
+    for quality in ("exact", "rounded_chs"):
+        for database in priority:
+            hits = sorted({
+                entry.name
+                for entry, key in entries
+                if entry.database.upper() == database.upper()
+                and key is not None
+                and match_quality(target, key) == quality
+            })
+            if len(hits) == 1:
+                if quality == "rounded_chs":
+                    name_key = _profile_key(hits[0])
+                    assert name_key is not None
+                    reason = nominal_chs_note(target, name_key)
+                else:
+                    reason = "Same section family and all nominal dimensions"
+                return Match(
+                    source_name, "matched", database,
+                    hits[0], tuple(hits), reason,
+                )
+            if len(hits) > 1:
+                return Match(
+                    source_name, "ambiguous", database,
+                    None, tuple(hits),
+                    "Multiple catalogue profiles have the same family and nominal dimensions",
+                )
+    return Match(
+        source_name, "unmatched",
+        reason="No exact or permitted rounded-CHS family-and-size match in active databases",
+    )
 
 
 def get_database_sections(robot: object, constants: object,

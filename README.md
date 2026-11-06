@@ -157,17 +157,28 @@ property calculations and check the CHS area against the annulus formula.
 The one-click `src/run_robot.py` now searches Robot's **ZA (SAISC 2010)**
 steel-section database, followed by **SADEF**, through the Robot COM API.
 The Python unit `src/robot_section_catalog.py` enumerates actual profiles
-available in your Robot installation and matches sections by **family and
-complete nominal size**, allowing spaces, multiplication symbols, decimal
-formatting and the equal-angle alias `L` → `EA`. It does **not** guess the
-closest section or silently use the wrong profile size.
+available in your Robot installation. The naming rules are maintained in
+`src/robot_profile_names.py`. Based on the South African catalogue labels
+observed in Robot, they use **AE** for equal angles, **AU** for unequal angles,
+and **CDIN** for *parallel-flange channels only* (not UPN/tapered channels).
+Source `L` angles are classified by their two leg dimensions. Other aliases
+`EA` and `UA` are retained for compatibility.
+
+CHS catalogue names can round their **outside diameter** to the nearest
+whole millimetre, so `CHS101.6X4` can match `RO 102x4` (or `CHS102x4`),
+provided the wall thickness agrees exactly. **Exact names take priority
+over rounded names**. The loaded section's A/Iy/Iz/J must still pass the
+independent annulus check. No other section families or wall thicknesses
+are rounded, and no closest-size guessing is permitted.
 
 For the supplied SMLX model the intended matching examples are:
 
 - `UB254X146X31` → `UB 254x146x31`
 - `UC152X152X30` → `UC 152x152x30`
-- `L60X60X6` → `EA 60x60x6` (equal angle)
-- `CHS101.6X4.0` → `CHS 101.6x4`
+- `L60X60X6` → `AE 60x60x6` (equal angle)
+- `L75X50X6` → `AU 75x50x6` (unequal-angle example)
+- `PFC200X75X23` → `CDIN 200x75x23` (parallel-flange channel example)
+- `CHS101.6X4.0` → `RO 102x4` (rounded nominal OD)
 
 These are **naming examples**: the actual availability is checked at runtime,
 and a profile is only loaded if found uniquely in Robot's selected database.
@@ -192,7 +203,8 @@ which can appear as a line. The resulting label ends in `_TUBE`, and the
 section audit records `"assignment": "parametric_tube"`.
 
 Database name matching also accepts Robot's `RO`, `RK`, and `RPA`
-tube/solid families as **potential** CHS names. These are accepted only
+tube/solid families as **potential** CHS names, including the permitted
+rounded-diameter equivalent. These are accepted only
 after verifying the actual Robot catalogue area, bending inertias and
 torsion constant against the exact annulus for the exported diameter and
 wall thickness. Solid tubes and similarly named non-CHS profiles are

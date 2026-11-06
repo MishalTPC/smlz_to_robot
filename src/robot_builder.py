@@ -123,8 +123,9 @@ def _create_sections(structure: object, c: object, model: WorkbookModel,
                         prop_id, match, mode="robot_database",
                         robot_props=actual, source_row=row,
                     ))
-                LOG.info("Robot database section: %s -> %s [%s]",
-                         row.section_name, match.catalogue_name, match.database)
+                LOG.info("Robot database section: %s -> %s [%s] (%s)",
+                         row.section_name, match.catalogue_name, match.database,
+                         match.reason)
                 if audit_rows is not None:
                     differences = audit_rows[-1].get("relative_differences", {})
                     significant = [f"{name}={100 * value:+.1f}%"
@@ -275,6 +276,8 @@ def create_robot_model(model: WorkbookModel, *, robot: object | None = None,
         catalogue_matches = {
             int(row.property_id): match_sections(
                 str(row.section_name), entries, priority=DEFAULT_DATABASES,
+                section_type=str(row.section_type),
+                section_standard=str(getattr(row, "section_standard", "")),
             )
             for _, row in model.properties.iterrows()
         }

@@ -69,11 +69,11 @@ class SectionCatalogueTests(unittest.TestCase):
     def test_four_sample_sections(self):
         catalog = [CatalogueEntry("ZA", "UB 254x146x31"),
                    CatalogueEntry("ZA", "UC152x152x30"),
-                   CatalogueEntry("ZA", "EA 60X60X6"),
+                   CatalogueEntry("ZA", "AE 60X60X6"),
                    CatalogueEntry("SADEF", "CHS 101.6x4")]
         cases = {"UB254X146X31": "UB 254x146x31",
                  "UC152X152X30": "UC152x152x30",
-                 "L60X60X6": "EA 60X60X6",
+                 "L60X60X6": "AE 60X60X6",
                  "CHS101.6X4.0": "CHS 101.6x4"}
         for source, expected in cases.items():
             with self.subTest(source=source):
