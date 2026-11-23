@@ -181,6 +181,31 @@ def _distinct(values: list[float], tolerance: float = 1e-8) -> list[float]:
     return result
 
 
+def _polygon_slice_intervals(
+    points: tuple[tuple[float, float], ...], fixed_axis: int, position: float,
+) -> list[tuple[float, float]]:
+    """Interior intervals where a line cuts the section polygon.
+
+    fixed_axis=1 gives y intervals at a fixed z; fixed_axis=0 gives z
+    intervals at a fixed y. The half-open rule avoids double-counting vertices.
+    """
+    other_axis = 1 - fixed_axis
+    crossings: list[float] = []
+    for start, end in zip(points, points[1:] + points[:1]):
+        a, b = start[fixed_axis], end[fixed_axis]
+        if (a <= position < b) or (b <= position < a):
+            fraction = (position - a) / (b - a)
+            crossings.append(
+                start[other_axis] + fraction * (end[other_axis] - start[other_axis])
+            )
+    crossings.sort()
+    if len(crossings) % 2:
+        raise ValueError("Section polygon has an odd number of slice intersections")
+    return [(crossings[i], crossings[i + 1])
+            for i in range(0, len(crossings), 2)
+            if crossings[i + 1] - crossings[i] > 1e-10]
+
+
 def _section_dimensions(section: SectionDefinition) -> dict[str, float | str]:
     """Dimensions obtained from the real section coordinates (all in metres)."""
     ys = _distinct([p[0] for p in section.points])
@@ -196,6 +221,30 @@ def _section_dimensions(section: SectionDefinition) -> dict[str, float | str]:
         if len(ys) == 4 and len(zs) == 4:
             dimensions["tw"] = ys[2] - ys[1]
             dimensions["tf"] = (zs[1] - zs[0] + zs[3] - zs[2]) / 2
+    elif (name.startswith(("PFC", "CDIN"))
+          or "PFC" in section.standard.upper()
+          or ("PARALLEL" in section.standard.upper()
+              and "CHANNEL" in section.standard.upper())):
+        dimensions["section_type"] = "PFC"
+        # At mid-depth only the web should remain. At mid-width the two
+        # flanges should form separate intervals. This also handles mirrored
+        # channel polygons without relying on a fixed vertex count.
+        web = _polygon_slice_intervals(section.points, 1, (zs[0] + zs[-1]) / 2)
+        flanges = _polygon_slice_intervals(section.points, 0, (ys[0] + ys[-1]) / 2)
+        if len(web) != 1 or len(flanges) != 2:
+            raise ValueError(
+                f"Cannot resolve web/flange geometry for PFC {section.name}: "
+                f"expected one web interval and two flange intervals "
+                f"(found {len(web)} and {len(flanges)})"
+            )
+        tw = web[0][1] - web[0][0]
+        tf = sum(hi - lo for lo, hi in flanges) / 2
+        if not (0 < tw < b and 0 < tf < h / 2):
+            raise ValueError(
+                f"Invalid polygon-derived PFC thicknesses for {section.name}: "
+                f"tw={tw:g} m, tf={tf:g} m"
+            )
+        dimensions.update(tw=tw, tf=tf)
     elif name.startswith("L") and len(ys) >= 3 and len(zs) >= 3:
         dimensions["section_type"] = "ANGLE"
         # For the sample equal-angle shape the internal transition points
@@ -238,9 +287,12 @@ def _properties_from_geometry(
             "Exact arc reconstruction is not implemented; calculation stopped."
         )
     kind = dimensions["section_type"]
-    thickness = float(dimensions["t"] if kind == "CHS" else
-                      dimensions["tw"] if kind == "I" else
-                      dimensions["t"])
+    thickness = float(
+        min(dimensions["tw"], dimensions["tf"]) if kind == "PFC" else
+        dimensions["t"] if kind == "CHS" else
+        dimensions["tw"] if kind == "I" else
+        dimensions["t"]
+    )
     if not math.isfinite(thickness) or thickness <= 0:
         raise ValueError(f"Cannot determine a positive thickness for {section.name}")
     if kind == "CHS":
