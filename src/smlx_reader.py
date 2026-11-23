@@ -94,12 +94,50 @@ def _load_xml(source: str | Path) -> ET.Element:
     elif source.is_file() and source.suffix.lower() == ".xml":
         data = source.read_bytes()
     elif source.is_dir():
-        names = sorted(source.glob("Contents/*.xml"))
-        if not names:
-            names = sorted(source.glob("**/Contents/*.xml"))
-        if len(names) != 1:
-            raise ValueError(f"Expected one main XML under a Contents folder in {source}, found {names}")
-        data = names[0].read_bytes()
+        # Accept the extracted SMLX structure, with any nesting depth and
+        # case variation in the Contents directory or XML suffix.
+        files = [p for p in source.rglob("*") if p.is_file()]
+        xml_under_contents = sorted(
+            p for p in files
+            if p.suffix.lower() == ".xml" and p.parent.name.lower() == "contents"
+        )
+        if len(xml_under_contents) == 1:
+            data = xml_under_contents[0].read_bytes()
+        elif len(xml_under_contents) > 1:
+            raise ValueError(
+                f"Multiple SMLX XML files under Contents in {source}. "
+                f"Pass the desired XML file explicitly: {xml_under_contents}"
+            )
+        else:
+            # The user may have selected the directory holding a compressed
+            # export instead of the archive itself. Never choose arbitrarily.
+            archives = sorted(
+                p for p in files if p.suffix.lower() in (".zip", ".smlx", ".smlz")
+            )
+            if len(archives) == 1:
+                return _load_xml(archives[0])
+            if len(archives) > 1:
+                raise ValueError(
+                    f"Multiple SMLX/ZIP archives found in {source}: {archives}. "
+                    "Pass the correct archive path as the first argument."
+                )
+            other_xml = sorted(
+                p for p in files
+                if p.suffix.lower() == ".xml"
+                and p.name.lower() != "[content_types].xml"
+                and "_rels" not in (part.lower() for part in p.parts)
+            )
+            if len(other_xml) == 1:
+                return _load_xml(other_xml[0])
+            entries = sorted(p.name for p in source.iterdir())
+            raise ValueError(
+                f"Cannot locate a unique SMLX model in {source}. "
+                "Expected a Contents/<model>.xml file, one .smlx/.smlz/.zip "
+                "archive, or one standalone model XML. "
+                f"Other XML candidates: {other_xml}. "
+                f"Top-level entries: {entries[:20]}. "
+                "Pass the exact SMLX/ZIP/XML file path as the first argument."
+            )
     else:
         raise FileNotFoundError(f"SMLX source does not exist or has an unsupported format: {source}")
     root = ET.fromstring(data)
