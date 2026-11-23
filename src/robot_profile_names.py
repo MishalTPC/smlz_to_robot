@@ -16,7 +16,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 # Longest alternatives first. Single-letter C cannot imply a parallel channel
 # unless the source metadata expressly identifies a parallel-flange family.
 _FAMILY = re.compile(
-    r"(?<![A-Z])(CDIN|CHS|RPA|PFC|UPN|UB|UC|AE|AU|EA|UA|RO|RK|L|C)(?![A-Z])",
+    r"(?<![A-Z])(CDIN|RSEA|RSUA|RSAE|RSAU|CHS|RPA|PFC|UPN|UB|UC|AE|AU|EA|UA|RO|RK|L|C)(?![A-Z])",
     re.IGNORECASE,
 )
 _NUMBERS = re.compile(r"(?<![\d.])\d+(?:\.\d+)?")
@@ -25,7 +25,8 @@ _NUMBERS = re.compile(r"(?<![\d.])\d+(?:\.\d+)?")
 _BASE_FAMILY = {
     "CHS": "CHS", "RO": "CHS", "RK": "CHS", "RPA": "CHS",
     "UB": "UB", "UC": "UC",
-    "AE": "AE", "EA": "AE", "AU": "AU", "UA": "AU",
+    "AE": "AE", "EA": "AE", "RSEA": "AE", "RSAE": "AE",
+    "AU": "AU", "UA": "AU", "RSUA": "AU", "RSAU": "AU",
     "PFC": "PFC", "CDIN": "PFC",
 }
 
