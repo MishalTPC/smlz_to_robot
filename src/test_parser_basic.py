@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -100,6 +101,48 @@ class ReaderTest(unittest.TestCase):
         self.assertAlmostEqual(props.iloc[0].t, .006)
         self.assertTrue(math.isnan(props.iloc[0].A))
         self.assertTrue(math.isnan(props.iloc[0].G))
+
+    def test_folder_with_single_smlx_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            export_dir = Path(folder) / "CAPM 7 SHAFT HEADGEAR"
+            export_dir.mkdir()
+            archive = export_dir / "headgear.smlx"
+            with zipfile.ZipFile(archive, "w") as zf:
+                zf.writestr("Contents/headgear.xml", _fixture())
+            nodes, elements, props = read_smlx(
+                export_dir, calculate_properties=False, poisson_override=0.30
+            )
+        self.assertEqual(len(nodes), 3)
+        self.assertEqual(len(elements), 2)
+        self.assertEqual(len(props), 1)
+
+    def test_folder_with_one_standalone_xml(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            export_dir = Path(folder) / "CAPM 7 SHAFT HEADGEAR"
+            export_dir.mkdir()
+            (export_dir / "headgear.xml").write_bytes(_fixture())
+            nodes, _, _ = read_smlx(
+                export_dir, calculate_properties=False, poisson_override=0.30
+            )
+        self.assertEqual(len(nodes), 3)
+
+    def test_folder_with_multiple_archives_requires_choice(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            export_dir = Path(folder) / "CAPM 7 SHAFT HEADGEAR"
+            export_dir.mkdir()
+            for name in ("one.smlx", "two.smlx"):
+                with zipfile.ZipFile(export_dir / name, "w") as zf:
+                    zf.writestr("Contents/model.xml", _fixture())
+            with self.assertRaisesRegex(ValueError, "Multiple SMLX/ZIP archives"):
+                read_smlx(export_dir, calculate_properties=False)
+
+    def test_folder_without_model_explains_required_input(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            export_dir = Path(folder) / "CAPM 7 SHAFT HEADGEAR"
+            export_dir.mkdir()
+            (export_dir / "notes.txt").write_text("no SMLX export", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Pass the exact SMLX/ZIP/XML file path"):
+                read_smlx(export_dir, calculate_properties=False)
 
     def test_poisson_override(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
