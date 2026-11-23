@@ -240,19 +240,39 @@ def _section_dimensions(section: SectionDefinition) -> dict[str, float | str]:
                 f"tw={tw:g} m, tf={tf:g} m"
             )
         dimensions.update(tw=tw, tf=tf)
+    elif (name.startswith("L")
+          or re.search(r"(?<![A-Z])(?:RSEA|RSUA|RSAE|RSAU|EA|UA)(?![A-Z])", name)
+          or "ANGLE" in section.standard.upper()):
+        dimensions["section_type"] = "ANGLE"
+        # Slice both legs away from the corner/root radius. Unlike counting
+        # unique polygon coordinates, this also works with faceted fillets,
+        # mirrored angles and either polygon winding direction.
+        leg_z = _polygon_slice_intervals(section.points, 0, (ys[0] + ys[-1]) / 2)
+        leg_y = _polygon_slice_intervals(section.points, 1, (zs[0] + zs[-1]) / 2)
+        if len(leg_z) != 1 or len(leg_y) != 1:
+            raise ValueError(
+                f"Cannot resolve angle leg thicknesses for {section.name}: "
+                f"expected one interval on each mid-leg slice"
+            )
+        thickness_z = leg_z[0][1] - leg_z[0][0]
+        thickness_y = leg_y[0][1] - leg_y[0][0]
+        if not (0 < thickness_z < h / 2 and 0 < thickness_y < b / 2):
+            raise ValueError(
+                f"Invalid polygon-derived angle thicknesses for {section.name}: "
+                f"{thickness_z:g} m and {thickness_y:g} m"
+            )
+        if not math.isclose(thickness_z, thickness_y, rel_tol=0.1, abs_tol=5e-4):
+            raise ValueError(
+                f"Inconsistent angle leg thicknesses for {section.name}: "
+                f"{thickness_z:g} m and {thickness_y:g} m"
+            )
+        t = min(thickness_z, thickness_y)
+        dimensions.update(t=t, tw=t, tf=t)
     elif name.startswith(("UB", "UC")) or section.section_class.upper() == "I":
         dimensions["section_type"] = "I"
         if len(ys) == 4 and len(zs) == 4:
             dimensions["tw"] = ys[2] - ys[1]
             dimensions["tf"] = (zs[1] - zs[0] + zs[3] - zs[2]) / 2
-    elif name.startswith("L") and len(ys) >= 3 and len(zs) >= 3:
-        dimensions["section_type"] = "ANGLE"
-        # For the sample equal-angle shape the internal transition points
-        # provide one leg thickness on each axis.
-        if len(ys) == 3 and len(zs) == 3:
-            t = min(ys[1] - ys[0], ys[2] - ys[1],
-                    zs[1] - zs[0], zs[2] - zs[1])
-            dimensions.update(t=t, tw=t, tf=t)
     elif name.startswith("CHS") or section.section_class.upper() == "O":
         dimensions["section_type"] = "CHS"
         # The SMLX profile has separate circular coordinates for the inner
@@ -293,9 +313,9 @@ def _properties_from_geometry(
         dimensions["tw"] if kind == "I" else
         dimensions["t"]
     )
-    if not math.isfinite(thickness) or thickness <= 0:
-        raise ValueError(f"Cannot determine a positive thickness for {section.name}")
     if kind == "CHS":
+        if not math.isfinite(thickness) or thickness <= 0:
+            raise ValueError(f"Cannot determine a positive thickness for {section.name}")
         geometry = circular_hollow_section(
             d=float(dimensions["h"]) * 1000,
             t=thickness * 1000,
@@ -308,6 +328,20 @@ def _properties_from_geometry(
         polygon = Polygon(coords_mm)
         if not polygon.is_valid or polygon.area <= 0:
             raise ValueError(f"Invalid polygon extracted for section {section.name}")
+        if kind == "UNKNOWN":
+            # An unrecognised name should not prevent calculating the real
+            # polygon's section properties. 2A/perimeter is a characteristic
+            # wall scale for an open thin-walled polygon, used only for mesh
+            # sizing; do not fabricate nominal web/flange dimensions.
+            thickness = 2 * polygon.area / polygon.length / 1000
+            warnings.warn(
+                f"Unrecognised section family {section.name!r}: calculating "
+                "geometric properties from its SMLX polygon using a "
+                "perimeter-based mesh size. Check Robot catalogue mapping.",
+                stacklevel=2,
+            )
+        if not math.isfinite(thickness) or thickness <= 0:
+            raise ValueError(f"Cannot determine a positive thickness for {section.name}")
         geometry = Geometry(polygon)
 
     mesh_area_mm2 = mesh_factor * (thickness * 1000) ** 2
