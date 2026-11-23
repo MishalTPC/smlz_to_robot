@@ -216,12 +216,7 @@ def _section_dimensions(section: SectionDefinition) -> dict[str, float | str]:
         "section_type": "UNKNOWN", "h": h, "b": b,
         "tw": math.nan, "tf": math.nan, "t": math.nan,
     }
-    if name.startswith(("UB", "UC")) or section.section_class.upper() == "I":
-        dimensions["section_type"] = "I"
-        if len(ys) == 4 and len(zs) == 4:
-            dimensions["tw"] = ys[2] - ys[1]
-            dimensions["tf"] = (zs[1] - zs[0] + zs[3] - zs[2]) / 2
-    elif (name.startswith(("PFC", "CDIN"))
+    if (name.startswith(("PFC", "CDIN"))
           or "PFC" in section.standard.upper()
           or ("PARALLEL" in section.standard.upper()
               and "CHANNEL" in section.standard.upper())):
@@ -245,6 +240,11 @@ def _section_dimensions(section: SectionDefinition) -> dict[str, float | str]:
                 f"tw={tw:g} m, tf={tf:g} m"
             )
         dimensions.update(tw=tw, tf=tf)
+    elif name.startswith(("UB", "UC")) or section.section_class.upper() == "I":
+        dimensions["section_type"] = "I"
+        if len(ys) == 4 and len(zs) == 4:
+            dimensions["tw"] = ys[2] - ys[1]
+            dimensions["tf"] = (zs[1] - zs[0] + zs[3] - zs[2]) / 2
     elif name.startswith("L") and len(ys) >= 3 and len(zs) >= 3:
         dimensions["section_type"] = "ANGLE"
         # For the sample equal-angle shape the internal transition points
