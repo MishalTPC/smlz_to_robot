@@ -19,6 +19,13 @@ class ProfileNamingTests(unittest.TestCase):
         self.assertIsNone(profile_key('AU60x60x6'))
         self.assertIsNone(profile_key('AE75x50x6'))
 
+    def test_uk_rolled_angle_aliases(self):
+        self.assertEqual(profile_key("UK RSEA 100X100X8"), profile_key("AE100X100X8"))
+        self.assertEqual(profile_key("UK RSUA 100X65X7"), profile_key("AU100X65X7"))
+        self.assertEqual(profile_key("UK RSAE 100X100X8"), profile_key("L100X100X8"))
+        self.assertIsNone(profile_key("UK RSEA 100X75X8"))
+        self.assertIsNone(profile_key("UK RSUA 100X100X8"))
+
     def test_parallel_channel_only(self):
         self.assertEqual(profile_key('PFC200X75X23'), profile_key('CDIN 200x75x23'))
         self.assertIsNone(profile_key('UPN200x75x23'))
