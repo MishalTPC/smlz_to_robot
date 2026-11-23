@@ -6,6 +6,7 @@ import importlib.util
 import math
 import sys
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -53,6 +54,10 @@ class ChannelSectionTests(unittest.TestCase):
         for name in ("CDIN260X90X35", "C260X90X35"):
             with self.subTest(name=name):
                 self.assertEqual(_section_dimensions(_channel(name=name))["section_type"], "PFC")
+
+    def test_explicit_pfc_overrides_generic_i_class(self) -> None:
+        section = replace(_channel(), section_class="I")
+        self.assertEqual(_section_dimensions(section)["section_type"], "PFC")
 
     def test_rejects_non_channel_polygon(self) -> None:
         rect = SectionDefinition(
